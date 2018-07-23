@@ -19,7 +19,6 @@ app.use(logger('dev', 'tiny'));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
@@ -30,28 +29,36 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
-app.get('/', async (req, res) => {
-  console.log(req.query.psid);
+async function handleMessageQuiz(psid, quick_reply){
 
-  let user = await mongoOxfam.findOne({ "PSID": req.query.psid });
+  let user = await mongoOxfam.findOne({ "PSID": psid});
+  let response;
   if (!user)
-    user = await createUser(req.query.psid);
+    user = await createUser(psid);
 
   const anwsered_count = user.answered.count;
-  if (anwsered_count < 0 || anwsered_count >= dataJSON.length) {
+  if ( anwsered_count == dataJSON.length ) {
+    const profil = getProfil(user);
+    return response = { 
+      "text": "Congrats ! Ton profil benevole est :  "+ profil
+    }
+  }
+  else if (anwsered_count < 0 || anwsered_count > dataJSON.length) {
     user.answered.count = 0;
     await user.save();
-    res.status(400).send({ message: "error of database, please retry " });
+    //res.status(400).send({ message: "error of database, please retry " });
   }
 
   const content = dataJSON[anwsered_count];
-  const response = createQuickReplies(content);
+  response = createQuickReplies(content);
 
   await incrementCount(user);
-  const profil = getProfil(user);
-  await saveResult(user, content.answers[1].payload);
-  res.status(200).send({ content: content, profil: profil, response : response });
-});
+  if (quick_reply) 
+    await saveResult(user, quick_reply.payload);
+  
+  return response;
+ // res.status(200).send({ content: content, profil: profil, response : response });
+}
 
 async function createUser(psid) {
   console.log("create new user with the psid : " + psid);
@@ -98,7 +105,7 @@ function getProfil(user) {
 
 app.post('/webhook', (req, res) => {
   let body = req.body;
-
+console.log("hook webhook");
   if (body.object === 'page') {
     body.entry.forEach(entry => {
       // Gets the body of the webhook event
@@ -112,10 +119,13 @@ app.post('/webhook', (req, res) => {
       // Check if the event is a message or postback and
       // pass the event to the appropriate handler function
       if (webhook_event.message) {
-        if (webhook_event.message.quick_reply) {
-          handlePostback(sender_psid, webhook_event.message.quick_reply);
-        } else
-          handleMessage(sender_psid, webhook_event.message);
+        
+        //if (webhook_event.message.quick_reply) {
+          handleMessageQuiz(sender_psid, webhook_event.message.quick_reply).then( result =>   callSendAPI(sender_psid, result));
+          
+         // handlePostback(sender_psid, webhook_event.message.quick_reply);
+      //  } else
+        //  handleMessage(sender_psid, webhook_event.message);
       } else if (webhook_event.postback) {
         handlePostback(sender_psid, webhook_event.postback);
       }
@@ -148,7 +158,8 @@ function createQuickReplies(question) {
 
   let quick_replies = [];
   let response = {};
-
+  let attachment = {};
+  
   question.answers.forEach(answer => {
     let reply = {};
     reply.content_type = "text";
@@ -157,8 +168,13 @@ function createQuickReplies(question) {
 
     quick_replies.push(reply);
   });
-
-  response.text = question.question;
+  attachment.type =  "image";
+  attachment.payload = {
+    "url" : question.question,
+    "is_reusable" : false
+  };
+  
+  response.attachment = attachment;
   response.quick_replies = quick_replies;
 
   return response;

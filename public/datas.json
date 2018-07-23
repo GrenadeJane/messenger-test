@@ -1,189 +1,189 @@
 [
 	{
-		"question": "Lors d’une manif, tu te trouves",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-01.png",
 		"answers": [
 			{
-				"text": "À l’avant, à lancer des slogans",
+				"text": "1️⃣",
 				"payload": "CLE-ALI"
 			},
 			{
-				"text": "Dedans, à compter les manifestants",
+				"text": "2️⃣",
 				"payload": "GIU"
 			},
 			{
-				"text": "Derrière (ton écran), tu la suis via twitter",
+				"text": "3️⃣",
 				"payload": "BEN"
 			},
 			{
-				"text": "En dehors, ce n’est pas de ton ressort",
+				"text": "4️⃣",
 				"payload": "BIL-LIS-PHI"
 			}
 		]
 	},
 	{
-		"question": "Au menu de ton repas idéal",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-02.png",
 		"answers": [
 			{
-				"text": "Image axée sur pique-nique, nature",
+				"text": "1️⃣",
 				"payload": "ALI"
 			},
 			{
-				"text": "Image axée sur entre amis (repas simple type bolo)",
+				"text": "2️⃣",
 				"payload": "GIU-LIS"
 			},
 			{
-				"text": "Image type repas étoilé",
+				"text": "3️⃣",
 				"payload": "BIL"
 			},
 			{
-				"text": "Image type food truck, urban food",
+				"text": "4️⃣",
 				"payload": "CLE-PHI-BEN"
 			}
 		]
 	},
 	{
-		"question": "Dans l’organisation d’une soirée, tu t’occupes",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-03.png",
 		"answers": [
 			{
-				"text": "De rameuter les gens",
+				"text": "1️⃣",
 				"payload": "BEN"
 			},
 			{
-				"text": "Du bar et du buffet",
+				"text": "2️⃣",
 				"payload": "LIS-BIL"
 			},
 			{
-				"text": "Des musiques et des sunlights des tropiques",
+				"text": "3️⃣",
 				"payload": "GIU-CLE"
 			},
 			{
-				"text": "Du thème : plage, rayures, halloween, disco…",
+				"text": "4️⃣",
 				"payload": "PHI-ALI"
 			}
 		]
 	},
 	{
-		"question": "Le mot « balance » te fait penser à",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-04.png",
 		"answers": [
 			{
-				"text": "Image représentant la justice",
+				"text": "1️⃣",
 				"payload": "CLE-BIL"
 			},
 			{
-				"text": "Image de porc ou image de #balancetonporc #metoo",
+				"text": "2️⃣",
 				"payload": "BEN-ALI-GIU"
 			},
 			{
-				"text": "Image de balance de cuisine",
+				"text": "3️⃣",
 				"payload": "LIS"
 			},
 			{
-				"text": "Image (de qqn en recherche) d’équilibre",
+				"text": "4️⃣",
 				"payload": "PHI"
 			}
 		]
 	},
 	{
-		"question": "À quoi te fait penser cette forme (rond) ?",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-05.png",
 		"answers": [
 			{
-				"text": "Image ballon foot",
+				"text": "1️⃣",
 				"payload": "ALI-GIU"
 			},
 			{
-				"text": "Image lune",
+				"text": "2️⃣",
 				"payload": "CLE-PHI"
 			},
 			{
-				"text": "Image du chiffre zéro",
+				"text": "3️⃣",
 				"payload": "BIL-BEN"
 			},
 			{
-				"text": "Image d’une tarte",
+				"text": "4️⃣",
 				"payload": "LIS"
 			}
 		]
 	},
 	{
-		"question": "En ce moment, où voudrais-tu être ?",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-06.png",
 		"answers": [
 			{
-				"text": "Dans ton bain",
+				"text": "1️⃣",
 				"payload": "LIS-ALI"
 			},
 			{
-				"text": "Dans un train",
+				"text": "2️⃣",
 				"payload": "CLE"
 			},
 			{
-				"text": "Dans un magasin",
+				"text": "3️⃣",
 				"payload": "BIL-PHI"
 			},
 			{
-				"text": "Loin loin loin",
+				"text": "4️⃣",
 				"payload": "BEN-GIU"
 			}
 		]
 	},
 	{
-		"question": "Quand tu étais enfant, ton jouet préféré était",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-07.png",
 		"answers": [
 			{
-				"text": "Image jouet téléphone Fisher Price",
+				"text": "1️⃣",
 				"payload": "GIU-ALI"
 			},
 			{
-				"text": "Image jouet magasin en bois fruit et légume",
+				"text": "2️⃣",
 				"payload": "LIS-BIL"
 			},
 			{
-				"text": "Image jouet cabane dans le jardin/dans les bois",
+				"text": "3️⃣",
 				"payload": "CLE"
 			},
 			{
-				"text": "Image jouet Lego",
+				"text": "4️⃣",
 				"payload": "BEN-PHI"
 			}
 		]
 	},
 	{
-		"question": "Si tu étais journaliste, tu travaillerais pour",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-08.png",
 		"answers": [
 			{
-				"text": "Image Le Monde diplomatique",
+				"text": "1️⃣",
 				"payload": "ALI"
 			},
 			{
-				"text": "Image Tricot mag",
+				"text": "2️⃣",
 				"payload": "PHI-LIS"
 			},
 			{
-				"text": "Image Brut",
+				"text": "3️⃣",
 				"payload": "BEN-CLE"
 			},
 			{
-				"text": "Image Moustique",
+				"text": "4️⃣",
 				"payload": "BIL-GIU"
 			}
 		]
 	},
 	{
-		"question": "Pour toi, écouter de la musique c’est…",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-09.png",
 		"answers": [
 			{
-				"text": "En streaming sur ton smartphone",
+				"text": "1️⃣",
 				"payload": "BEN-BIL"
 			},
 			{
-				"text": "Un vinyle sur ta platine",
+				"text": "2️⃣",
 				"payload": "PHI-CLE"
 			},
 			{
-				"text": "En concert avec tes amis",
+				"text": "3️⃣",
 				"payload": "GIU-LIS"
 			},
 			{
-				"text": "Le chant des oiseaux à l'orée d'un bois",
+				"text": "4️⃣",
 				"payload": "ALI"
 			}
 		]
