@@ -106,6 +106,9 @@ function getProfil(user) {
 // 	});
 
 app.post('/webhook', (req, res) => {
+
+  
+  
   let body = req.body;
 console.log("hook webhook");
   if (body.object === 'page') {
@@ -118,6 +121,17 @@ console.log("hook webhook");
       let sender_psid = webhook_event.sender.id;
       webhookDebug('Sender PSID: ' + sender_psid);
 
+      
+        let test = {};
+  test = {
+  "recipient":{
+    "id":sender_psid
+  },
+  "sender_action":"typing_off"
+}
+      
+  return callSendAPIDirect(sender_psid, test);
+      
       // Check if the event is a message or postback and
       // pass the event to the appropriate handler function
       if (webhook_event.message) {
@@ -244,9 +258,13 @@ function handlePostback(sender_psid, received_postback) {
 
   // Get the payload for the postback
   let payload = received_postback.payload;
-  let profiles = parsePayload(payload);
+  
+  
+  if ( payload == "start_quiz" ) {
+    response = { "text": chatJSON.letsgo };
+    
+  }
   // Set the response based on the postback payload
-  response = { "text": "Ton profil bénévole est " + payload + profiles }
 
   // Send the message to acknowledge the postback
   callSendAPI(sender_psid, response);
@@ -254,6 +272,24 @@ function handlePostback(sender_psid, received_postback) {
 
 function parsePayload(payload) {
   return payload.split('-');
+}
+
+function callSendAPIDirect( sender_psid, response ) {
+
+  // Send the HTTP request to the Messenger Platform
+  request({
+    "uri": "https://graph.facebook.com/v2.6/me/messages",
+    "qs": { "access_token": process.env.PAGE_ACCESS_TOKEN },
+    "method": "POST",
+    "json": response
+  }, (err, res, body) => {
+    if (!err) {
+      console.log('message sent!')
+      console.dir(response);
+    } else {
+      console.error("Unable to send message:" + err);
+    }
+  });
 }
 
 function callSendAPI(sender_psdi, response) {
