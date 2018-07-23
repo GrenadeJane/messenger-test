@@ -30,8 +30,9 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
-async function handleMessageQuiz(psid, quick_reply){
+async function handleMessageQuiz(psid, webhookMessage){
 
+  const quick_reply = (webhookMessage ) ? webhookMessage.quick_reply : null;
   let user = await mongoOxfam.findOne({ "PSID": psid});
   let response;
   if (!user)
@@ -105,6 +106,29 @@ function getProfil(user) {
 // 	res.sendStatus(200, {message : " evrything is oké" });
 // 	});
 
+// mark_seen / typing_on / typing_off
+async function sendAction (sender_psid , action ) {
+        let test = {};
+  test = {
+  "recipient":{
+    "id":sender_psid
+  },
+  "sender_action":action
+}
+      
+   callSendAPIDirect(sender_psid, test);
+}
+
+async function sendTypingOn(sender_psid ) {
+}
+
+async function sendTypingOff( sender_psid ) {
+}
+
+function test (sender_psid, webhook_event) {
+  handleMessageQuiz(sender_psid, webhook_event.message).then( result =>   callSendAPI(sender_psid, result))
+}
+
 app.post('/webhook', (req, res) => {
 
   
@@ -120,30 +144,28 @@ console.log("hook webhook");
       // Get the sender PSID
       let sender_psid = webhook_event.sender.id;
       webhookDebug('Sender PSID: ' + sender_psid);
+      sendAction(sender_psid , "mark_seen");  
 
       
-        let test = {};
-  test = {
-  "recipient":{
-    "id":sender_psid
-  },
-  "sender_action":"typing_off"
-}
-      
-  return callSendAPIDirect(sender_psid, test);
+
       
       // Check if the event is a message or postback and
       // pass the event to the appropriate handler function
       if (webhook_event.message) {
-        
+        sendAction(sender_psid , "typing_on");  
+         test(sender_psid, webhook_event);
+        setTimeout ( () => {
+          sendAction(sender_psid , "typing_off"); 
+          }, 2000);
+  //      setTimeout(()  => {
+    //                      }, 20 );
         //if (webhook_event.message.quick_reply) {
-          handleMessageQuiz(sender_psid, webhook_event.message.quick_reply).then( result =>   callSendAPI(sender_psid, result));
           
          // handlePostback(sender_psid, webhook_event.message.quick_reply);
       //  } else
         //  handleMessage(sender_psid, webhook_event.message);
       } else if (webhook_event.postback) {
-        handlePostback(sender_psid, webhook_event.postback);
+        handlePostback(sender_psid, webhook_event);
       }
     });
     res.status(200).send('EVENT_RECEIVED');
@@ -253,21 +275,26 @@ function createQuickReplies(question) {
 // }
 
 // Handles messaging_postbacks events
-function handlePostback(sender_psid, received_postback) {
+function handlePostback(sender_psid, webhook_event) {
   let response;
 
   // Get the payload for the postback
-  let payload = received_postback.payload;
+  let payload = webhook_event.postback.payload;
   
   
   if ( payload == "start_quiz" ) {
     response = { "text": chatJSON.letsgo };
+    callSendAPI(sender_psid, response);
+    
+    setTimeout(
+      () => {
+        test(sender_psid, webhook_event);
+      }, 1000 );
     
   }
   // Set the response based on the postback payload
 
   // Send the message to acknowledge the postback
-  callSendAPI(sender_psid, response);
 }
 
 function parsePayload(payload) {
