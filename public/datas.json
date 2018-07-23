@@ -1,0 +1,191 @@
+[
+	{
+		"question": "Lors d’une manif, tu te trouves",
+		"answers": [
+			{
+				"text": "À l’avant, à lancer des slogans",
+				"payload": "CLE-ALI"
+			},
+			{
+				"text": "Dedans, à compter les manifestants",
+				"payload": "GIU"
+			},
+			{
+				"text": "Derrière (ton écran), tu la suis via twitter",
+				"payload": "BEN"
+			},
+			{
+				"text": "En dehors, ce n’est pas de ton ressort",
+				"payload": "BIL-LIS-PHI"
+			}
+		]
+	},
+	{
+		"question": "Au menu de ton repas idéal",
+		"answers": [
+			{
+				"text": "Image axée sur pique-nique, nature",
+				"payload": "ALI"
+			},
+			{
+				"text": "Image axée sur entre amis (repas simple type bolo)",
+				"payload": "GIU-LIS"
+			},
+			{
+				"text": "Image type repas étoilé",
+				"payload": "BIL"
+			},
+			{
+				"text": "Image type food truck, urban food",
+				"payload": "CLE-PHI-BEN"
+			}
+		]
+	},
+	{
+		"question": "Dans l’organisation d’une soirée, tu t’occupes",
+		"answers": [
+			{
+				"text": "De rameuter les gens",
+				"payload": "BEN"
+			},
+			{
+				"text": "Du bar et du buffet",
+				"payload": "LIS-BIL"
+			},
+			{
+				"text": "Des musiques et des sunlights des tropiques",
+				"payload": "GIU-CLE"
+			},
+			{
+				"text": "Du thème : plage, rayures, halloween, disco…",
+				"payload": "PHI-ALI"
+			}
+		]
+	},
+	{
+		"question": "Le mot « balance » te fait penser à",
+		"answers": [
+			{
+				"text": "Image représentant la justice",
+				"payload": "CLE-BIL"
+			},
+			{
+				"text": "Image de porc ou image de #balancetonporc #metoo",
+				"payload": "BEN-ALI-GIU"
+			},
+			{
+				"text": "Image de balance de cuisine",
+				"payload": "LIS"
+			},
+			{
+				"text": "Image (de qqn en recherche) d’équilibre",
+				"payload": "PHI"
+			}
+		]
+	},
+	{
+		"question": "À quoi te fait penser cette forme (rond) ?",
+		"answers": [
+			{
+				"text": "Image ballon foot",
+				"payload": "ALI-GIU"
+			},
+			{
+				"text": "Image lune",
+				"payload": "CLE-PHI"
+			},
+			{
+				"text": "Image du chiffre zéro",
+				"payload": "BIL-BEN"
+			},
+			{
+				"text": "Image d’une tarte",
+				"payload": "LIS"
+			}
+		]
+	},
+	{
+		"question": "En ce moment, où voudrais-tu être ?",
+		"answers": [
+			{
+				"text": "Dans ton bain",
+				"payload": "LIS-ALI"
+			},
+			{
+				"text": "Dans un train",
+				"payload": "CLE"
+			},
+			{
+				"text": "Dans un magasin",
+				"payload": "BIL-PHI"
+			},
+			{
+				"text": "Loin loin loin",
+				"payload": "BEN-GIU"
+			}
+		]
+	},
+	{
+		"question": "Quand tu étais enfant, ton jouet préféré était",
+		"answers": [
+			{
+				"text": "Image jouet téléphone Fisher Price",
+				"payload": "GIU-ALI"
+			},
+			{
+				"text": "Image jouet magasin en bois fruit et légume",
+				"payload": "LIS-BIL"
+			},
+			{
+				"text": "Image jouet cabane dans le jardin/dans les bois",
+				"payload": "CLE"
+			},
+			{
+				"text": "Image jouet Lego",
+				"payload": "BEN-PHI"
+			}
+		]
+	},
+	{
+		"question": "Si tu étais journaliste, tu travaillerais pour",
+		"answers": [
+			{
+				"text": "Image Le Monde diplomatique",
+				"payload": "ALI"
+			},
+			{
+				"text": "Image Tricot mag",
+				"payload": "PHI-LIS"
+			},
+			{
+				"text": "Image Brut",
+				"payload": "BEN-CLE"
+			},
+			{
+				"text": "Image Moustique",
+				"payload": "BIL-GIU"
+			}
+		]
+	},
+	{
+		"question": "Pour toi, écouter de la musique c’est…",
+		"answers": [
+			{
+				"text": "En streaming sur ton smartphone",
+				"payload": "BEN-BIL"
+			},
+			{
+				"text": "Un vinyle sur ta platine",
+				"payload": "PHI-CLE"
+			},
+			{
+				"text": "En concert avec tes amis",
+				"payload": "GIU-LIS"
+			},
+			{
+				"text": "Le chant des oiseaux à l'orée d'un bois",
+				"payload": "ALI"
+			}
+		]
+	}
+]
