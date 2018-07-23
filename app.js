@@ -10,7 +10,8 @@ var bodyParser = require('body-parser');
 var app = express();
 const PQueue = require('p-queue');
 const mongoOxfam = require("./routes/mongoose");
-const dataJSON = require('./public/datas.json');
+const dataJSON = require('./public/quiz.json');
+const chatJSON = require('./public/chat.json');
 
 //dom(app); 
 // :: Dependencies in the personal code
@@ -52,9 +53,10 @@ async function handleMessageQuiz(psid, quick_reply){
   const content = dataJSON[anwsered_count];
   response = createQuickReplies(content);
 
-  await incrementCount(user);
-  if (quick_reply) 
+  if (quick_reply) {
     await saveResult(user, quick_reply.payload);
+    // await incrementCount(user);
+  }
   
   return response;
  // res.status(200).send({ content: content, profil: profil, response : response });
@@ -68,14 +70,14 @@ async function createUser(psid) {
   return await user.save();
 }
 
-async function incrementCount(user) {
-  user.answered.count++;
-  await user.save();
-}
+// async function incrementCount(user) {
+//   user.answered.count++;
+//   await user.save();
+// }
 
 async function saveResult(user, payload) {
   const arrayName = payload.split("-");
-  await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": arrayName } });
+  await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": arrayName } , $inc : { "answered.count" : 1 }});
 }
 
 function getProfil(user) {
@@ -181,46 +183,46 @@ function createQuickReplies(question) {
 }
 
 // Handles messages events
-function handleMessage(sender_psid, received_message) {
-  let response;
-  var responses = [];
-  // Checks if the message contains text
-  if (received_message.text) {
+// function handleMessage(sender_psid, received_message) {
+//   let response;
+//   var responses = [];
+//   // Checks if the message contains text
+//   if (received_message.text) {
 
-    response = {
-      "quick_replies": [
-        {
-          "content_type": "text",
-          "title": '1. 📢',
-          "payload": "CLE-ALI",
-        },
-        {
-          "content_type": "text",
-          "title": "2. 🔢",
-          "payload": "GIU",
-        },
-        {
-          "content_type": "text",
-          "title": "3. 📱",
-          "payload": "BEN",
-        },
-        {
-          "content_type": "text",
-          "title": "4. 🏝️",
-          "payload": "BIL-LIS-PHI",
-        }
-      ],
-      "attachment": {
-        "type": "image",
-        "payload": {
-          "url": "https://s3.eu-central-1.amazonaws.com/admented/test/question-template-texts-smileys.png",
-          "is_reusable": true
-        }
-      }
-    }
+//     response = {
+//       "quick_replies": [
+//         {
+//           "content_type": "text",
+//           "title": '1. 📢',
+//           "payload": "CLE-ALI",
+//         },
+//         {
+//           "content_type": "text",
+//           "title": "2. 🔢",
+//           "payload": "GIU",
+//         },
+//         {
+//           "content_type": "text",
+//           "title": "3. 📱",
+//           "payload": "BEN",
+//         },
+//         {
+//           "content_type": "text",
+//           "title": "4. 🏝️",
+//           "payload": "BIL-LIS-PHI",
+//         }
+//       ],
+//       "attachment": {
+//         "type": "image",
+//         "payload": {
+//           "url": "https://s3.eu-central-1.amazonaws.com/admented/test/question-template-texts-smileys.png",
+//           "is_reusable": true
+//         }
+//       }
+//     }
 
 
-  }
+//   }
   /*let response;
 
   // Check if the message contains text
@@ -232,9 +234,9 @@ function handleMessage(sender_psid, received_message) {
     }
   }*/
 
-  // Sends the response message
-  callSendAPI(sender_psid, response);
-}
+//   // Sends the response message
+//   callSendAPI(sender_psid, response);
+// }
 
 // Handles messaging_postbacks events
 function handlePostback(sender_psid, received_postback) {
