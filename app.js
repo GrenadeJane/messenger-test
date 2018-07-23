@@ -41,7 +41,7 @@ async function handleMessageQuiz(psid, quick_reply){
   if ( anwsered_count == dataJSON.length ) {
     const profil = getProfil(user);
     return response = { 
-      "text": "Congrats ! Ton profil benevole est :  "+ profil
+      "text": "Congrats ! Ton profil benevole est :  "+ chatJSON.profils[profil].text
     }
   }
   else if (anwsered_count < 0 || anwsered_count > dataJSON.length) {
