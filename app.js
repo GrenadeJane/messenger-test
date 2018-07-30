@@ -12,8 +12,11 @@ const PQueue = require('p-queue');
 const mongoOxfam = require("./routes/mongoose");
 const dataJSON = require('./public/quiz.json');
 const chatJSON = require('./public/chat.json');
+const emojiJSON = require("emoji-datasource-messenger/emoji.json");
+const testemoji = require("emoji-data" ) ;
 
-//dom(app); 
+const zero = testemoji.from_unified("0030-FE0F-20E3");
+const est = testemoji.find_by_short_name(":zero:");//app); 
 // :: Dependencies in the personal code
 
 app.use(logger('dev', 'tiny'));
@@ -125,8 +128,8 @@ async function sendTypingOn(sender_psid ) {
 async function sendTypingOff( sender_psid ) {
 }
 
-function test (sender_psid, webhook_event) {
-  handleMessageQuiz(sender_psid, webhook_event.message).then( result =>   callSendAPI(sender_psid, result))
+function test (sender_psid, message ) {
+  handleMessageQuiz(sender_psid, message ).then( result =>   callSendAPI(sender_psid, result))
 }
 
 app.post('/webhook', (req, res) => {
@@ -145,6 +148,7 @@ console.log("hook webhook");
       let sender_psid = webhook_event.sender.id;
       webhookDebug('Sender PSID: ' + sender_psid);
       sendAction(sender_psid , "mark_seen");  
+      callSendAPI(sender_psid, "0030-FE0F-20E3");
 
       
 
@@ -218,83 +222,36 @@ function createQuickReplies(question) {
   return response;
 }
 
-// Handles messages events
-// function handleMessage(sender_psid, received_message) {
-//   let response;
-//   var responses = [];
-//   // Checks if the message contains text
-//   if (received_message.text) {
-
-//     response = {
-//       "quick_replies": [
-//         {
-//           "content_type": "text",
-//           "title": '1. 📢',
-//           "payload": "CLE-ALI",
-//         },
-//         {
-//           "content_type": "text",
-//           "title": "2. 🔢",
-//           "payload": "GIU",
-//         },
-//         {
-//           "content_type": "text",
-//           "title": "3. 📱",
-//           "payload": "BEN",
-//         },
-//         {
-//           "content_type": "text",
-//           "title": "4. 🏝️",
-//           "payload": "BIL-LIS-PHI",
-//         }
-//       ],
-//       "attachment": {
-//         "type": "image",
-//         "payload": {
-//           "url": "https://s3.eu-central-1.amazonaws.com/admented/test/question-template-texts-smileys.png",
-//           "is_reusable": true
-//         }
-//       }
-//     }
-
-
-//   }
-  /*let response;
-
-  // Check if the message contains text
-  if (received_message.text) {    
-
-    // Create the payload for a basic text message
-    response = {
-      "text": `You sent the message: "${received_message.text}". Now send me an image!`
-    }
-  }*/
-
-//   // Sends the response message
-//   callSendAPI(sender_psid, response);
-// }
-
 // Handles messaging_postbacks events
 function handlePostback(sender_psid, webhook_event) {
-  let response;
 
   // Get the payload for the postback
   let payload = webhook_event.postback.payload;
   
-  
-  if ( payload == "start_quiz" ) {
-    response = { "text": chatJSON.letsgo };
+  // start quiz with the start button
+  if ( payload == "start_quiz" ) 
+    startQuiz(sender_psid, webhook_event.message );
+  else if ( payload == "reset_quiz") 
+    restartQuiz(sender_psid);
+}
+
+function startQuiz(sender_psid, message = null )
+{
+     let response = { "text": chatJSON.letsgo + zero.image };
     callSendAPI(sender_psid, response);
     
     setTimeout(
       () => {
-        test(sender_psid, webhook_event);
+          handleMessageQuiz(sender_psid, message ).then( result =>   callSendAPI(sender_psid, result))
       }, 1000 );
-    
-  }
-  // Set the response based on the postback payload
+}
 
-  // Send the message to acknowledge the postback
+function restartQuiz(sender_psid) 
+{
+  mongoOxfam
+    .findByIdAndUpdate(sender_psid, { $set :{ "answered.count" : 0 }})
+    .then(() => startQuiz(sender_psid))
+    .catch(err => console.log("error during the restart of the quizz "));
 }
 
 function parsePayload(payload) {
@@ -344,49 +301,7 @@ function callSendAPI(sender_psdi, response) {
     }
   });
 }
-// Sends response messages via the Send API
-async function callSendAPIasync(sender_psid, responses) {
 
-  var promiseTasks = [];
-  responses.forEach((response) =>
-    promiseTasks.push(promiseCallSendApi(sender_psid, response))
-  );
-
-
-  const queue = new PQueue({ concurrency: 1 });
-  return new Promise((resolve, reject) => {
-    queue.addAll(promiseTasks).then(() => { console.log("end resolve change postition"); resolve(); }).catch(err => reject);
-  });
-
-}
-
-function promiseCallSendApi(sender_psid, response) {
-  return new Promise((resolve, reject) => {
-    let request_body = {
-      "recipient": {
-        "id": sender_psid
-      },
-      "message": response
-    }
-
-    // Send the HTTP request to the Messenger Platform
-    request({
-      "uri": "https://graph.facebook.com/v2.6/me/messages",
-      "qs": { "access_token": process.env.PAGE_ACCESS_TOKEN },
-      "method": "POST",
-      "json": request_body
-    }, (err, res, body) => {
-      if (!err) {
-        resolve(response);
-        console.log('message sent!')
-        console.dir(response);
-      } else {
-        console.error("Unable to send message:" + err);
-        reject(err);
-      }
-    });
-  });
-}
 
 app.listen(process.env.PORT || 1337, () => debug('listen to ' + process.env.PORT));
 
