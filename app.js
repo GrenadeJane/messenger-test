@@ -33,6 +33,12 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
+function sleep(ms){
+  return new Promise(resolve=>{
+      setTimeout(resolve,ms)
+  });
+}
+
 async function handleMessageQuiz(psid, webhookMessage) {
 
   const quick_reply = (webhookMessage) ? webhookMessage.quick_reply : null;
@@ -150,6 +156,11 @@ app.post('/webhook', (req, res) => {
       // Check if the event is a message or postback and
       // pass the event to the appropriate handler function
       if (webhook_event.message) {
+        if ( webhook_event.message === "recommencer") {
+          restartQuiz(sender_psid);
+          continue;
+        }
+        
         sendTypingOn(sender_psid);
         
         handleMessageQuiz(sender_psid, webhook_event.message)
@@ -223,16 +234,39 @@ function handlePostback(sender_psid, webhook_event) {
     startQuiz(sender_psid, webhook_event.message);
   else if (payload == "reset_quiz")
     restartQuiz(sender_psid);
+  else if ( payload == "start_conversation")
+    startConversation(sender_psid);
+}
+
+async function startConversation(sender_psid) {
+  let response = { "text": chatJSON.greetings };
+  callSendAPI(sender_psid, response);
+
+  sendTypingOn(sender_psid);
+  await sleep(1000);
+  sendTypingOff(sender_psid);
+
+  let response = {"attachment": chatJSON.reset };
+  callSendAPI(sender_psid, response);
+
+  sendTypingOn(sender_psid);
+  await sleep(1000);
+  sendTypingOff(sender_psid);
+
+  let response = { "text": chatJSON.letsgo };
+  callSendAPI(sender_psid, response);
 }
 
 function startQuiz(sender_psid, message = null) {
-  let response = { "text": chatJSON.letsgo + zero.image };
+  let response = { "text": chatJSON.letsgo };
   callSendAPI(sender_psid, response);
 
-  setTimeout(
-    () => {
-      handleMessageQuiz(sender_psid, message).then(result => callSendAPI(sender_psid, result))
-    }, 1000);
+  sendTypingOn(sender_psid);
+  await sleep(1000);
+  sendTypingOff(sender_psid);
+
+  handleMessageQuiz(sender_psid, message)
+  .then(result => callSendAPI(sender_psid, result));
 }
 
 function restartQuiz(sender_psid) {
