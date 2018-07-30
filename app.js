@@ -12,8 +12,11 @@ const PQueue = require('p-queue');
 const mongoOxfam = require("./routes/mongoose");
 const dataJSON = require('./public/quiz.json');
 const chatJSON = require('./public/chat.json');
+const emojiJSON = require("emoji-datasource-messenger/emoji.json");
+const testemoji = require("emoji-data");
 
-//dom(app); 
+const zero = testemoji.from_unified("0030-FE0F-20E3");
+const est = testemoji.find_by_short_name(":zero:");//app); 
 // :: Dependencies in the personal code
 
 app.use(logger('dev', 'tiny'));
@@ -30,18 +33,23 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
-async function handleMessageQuiz(psid, quick_reply){
+async function handleMessageQuiz(psid, webhookMessage) {
 
-  let user = await mongoOxfam.findOne({ "PSID": psid});
+  const quick_reply = (webhookMessage) ? webhookMessage.quick_reply : null;
+  let user = await mongoOxfam.findOne({ "PSID": psid });
   let response;
   if (!user)
     user = await createUser(psid);
 
+  if (quick_reply) {
+    user = await saveResult(user, quick_reply.payload);
+  }
+
   const anwsered_count = user.answered.count;
-  if ( anwsered_count == dataJSON.length ) {
+  if (anwsered_count == dataJSON.length) {
     const profil = getProfil(user);
-    return response = { 
-      "text": "Congrats ! Ton profil benevole est :  "+ chatJSON.profils[profil].text
+    return response = {
+      "text": "Congrats ! Ton profil benevole est :  " + chatJSON.profils[profil].text
     }
   }
   else if (anwsered_count < 0 || anwsered_count > dataJSON.length) {
@@ -53,13 +61,8 @@ async function handleMessageQuiz(psid, quick_reply){
   const content = dataJSON[anwsered_count];
   response = createQuickReplies(content);
 
-  if (quick_reply) {
-    await saveResult(user, quick_reply.payload);
-    // await incrementCount(user);
-  }
-  
   return response;
- // res.status(200).send({ content: content, profil: profil, response : response });
+  // res.status(200).send({ content: content, profil: profil, response : response });
 }
 
 async function createUser(psid) {
@@ -70,14 +73,15 @@ async function createUser(psid) {
   return await user.save();
 }
 
-// async function incrementCount(user) {
-//   user.answered.count++;
-//   await user.save();
-// }
+async function incrementCount(user) {
+  user.answered.count++;
+  return await user.save();
+}
 
 async function saveResult(user, payload) {
   const arrayName = payload.split("-");
-  await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": arrayName } , $inc : { "answered.count" : 1 }});
+  user = await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": arrayName } });
+  return await incrementCount(user);
 }
 
 function getProfil(user) {
@@ -99,47 +103,74 @@ function getProfil(user) {
   }
   return maxEl;
 }
-// app.get('/', (req, res) => {
 
-// 	console.log('prout');
-// 	res.sendStatus(200, {message : " evrything is oké" });
-// 	});
+// mark_seen / typing_on / typing_off
+async function sendAction(sender_psid, action) {
+  let actionResponse = {
+    "recipient": {
+      "id": sender_psid
+    },
+    "sender_action": action
+  }
+
+  callSendAPIDirect(actionResponse);
+}
+
+async function sendTypingOn(sender_psid) {
+  sendAction(sender_psid, "typing_on");
+}
+
+async function sendTypingOff(sender_psid) {
+  sendAction(sender_psid, "typing_off");
+}
+
+async function sendMarkSeen(sender_psid ) {
+  sendAction(sender_psid, "mark_seen");
+}
+
+function test(sender_psid, message) {
+  handleMessageQuiz(sender_psid, message).then(result => callSendAPI(sender_psid, result))
+}
 
 app.post('/webhook', (req, res) => {
-  let body = req.body;
-console.log("hook webhook");
+  const body = req.body;
   if (body.object === 'page') {
+
     body.entry.forEach(entry => {
+
       // Gets the body of the webhook event
-      let webhook_event = entry.messaging[0];
+      const webhook_event = entry.messaging[0];
+      const  sender_psid = webhook_event.sender.id;
       webhookDebug(webhook_event);
 
       // Get the sender PSID
-      let sender_psid = webhook_event.sender.id;
       webhookDebug('Sender PSID: ' + sender_psid);
+      sendMarkSeen(sender_psid);
 
       // Check if the event is a message or postback and
       // pass the event to the appropriate handler function
       if (webhook_event.message) {
+        sendTypingOn(sender_psid);
         
-        //if (webhook_event.message.quick_reply) {
-          handleMessageQuiz(sender_psid, webhook_event.message.quick_reply).then( result =>   callSendAPI(sender_psid, result));
-          
-         // handlePostback(sender_psid, webhook_event.message.quick_reply);
-      //  } else
-        //  handleMessage(sender_psid, webhook_event.message);
+        handleMessageQuiz(sender_psid, webhook_event.message)
+        .then(result => callSendAPI(sender_psid, result))
+        .then(() => sendTypingOff(sender_psid))
+        .catch(err => console.log("error during the handle of the message quiz "));
+    
       } else if (webhook_event.postback) {
-        handlePostback(sender_psid, webhook_event.postback);
+        // :: only if restart of start quizz 
+        handlePostback(sender_psid, webhook_event);
       }
     });
+
     res.status(200).send('EVENT_RECEIVED');
+
   } else {
     res.sendStatus(404);
   }
 });
 
 app.get('/webhook', (req, res) => {
-  console.log('fucker');
   let VERIFY_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 
   let mode = req.query['hub.mode'];
@@ -157,11 +188,10 @@ app.get('/webhook', (req, res) => {
 });
 
 function createQuickReplies(question) {
-
   let quick_replies = [];
   let response = {};
   let attachment = {};
-  
+
   question.answers.forEach(answer => {
     let reply = {};
     reply.content_type = "text";
@@ -170,90 +200,63 @@ function createQuickReplies(question) {
 
     quick_replies.push(reply);
   });
-  attachment.type =  "image";
+  attachment.type = "image";
   attachment.payload = {
-    "url" : question.question,
-    "is_reusable" : false
+    "url": question.question,
+    "is_reusable": false
   };
-  
+
   response.attachment = attachment;
   response.quick_replies = quick_replies;
 
   return response;
 }
 
-// Handles messages events
-// function handleMessage(sender_psid, received_message) {
-//   let response;
-//   var responses = [];
-//   // Checks if the message contains text
-//   if (received_message.text) {
-
-//     response = {
-//       "quick_replies": [
-//         {
-//           "content_type": "text",
-//           "title": '1. 📢',
-//           "payload": "CLE-ALI",
-//         },
-//         {
-//           "content_type": "text",
-//           "title": "2. 🔢",
-//           "payload": "GIU",
-//         },
-//         {
-//           "content_type": "text",
-//           "title": "3. 📱",
-//           "payload": "BEN",
-//         },
-//         {
-//           "content_type": "text",
-//           "title": "4. 🏝️",
-//           "payload": "BIL-LIS-PHI",
-//         }
-//       ],
-//       "attachment": {
-//         "type": "image",
-//         "payload": {
-//           "url": "https://s3.eu-central-1.amazonaws.com/admented/test/question-template-texts-smileys.png",
-//           "is_reusable": true
-//         }
-//       }
-//     }
-
-
-//   }
-  /*let response;
-
-  // Check if the message contains text
-  if (received_message.text) {    
-
-    // Create the payload for a basic text message
-    response = {
-      "text": `You sent the message: "${received_message.text}". Now send me an image!`
-    }
-  }*/
-
-//   // Sends the response message
-//   callSendAPI(sender_psid, response);
-// }
-
 // Handles messaging_postbacks events
-function handlePostback(sender_psid, received_postback) {
-  let response;
+function handlePostback(sender_psid, webhook_event) {
 
   // Get the payload for the postback
-  let payload = received_postback.payload;
-  let profiles = parsePayload(payload);
-  // Set the response based on the postback payload
-  response = { "text": "Ton profil bénévole est " + payload + profiles }
+  let payload = webhook_event.postback.payload;
 
-  // Send the message to acknowledge the postback
-  callSendAPI(sender_psid, response);
+  // start quiz with the start button
+  if (payload == "start_quiz")
+    startQuiz(sender_psid, webhook_event.message);
+  else if (payload == "reset_quiz")
+    restartQuiz(sender_psid);
 }
 
-function parsePayload(payload) {
-  return payload.split('-');
+function startQuiz(sender_psid, message = null) {
+  let response = { "text": chatJSON.letsgo + zero.image };
+  callSendAPI(sender_psid, response);
+
+  setTimeout(
+    () => {
+      handleMessageQuiz(sender_psid, message).then(result => callSendAPI(sender_psid, result))
+    }, 1000);
+}
+
+function restartQuiz(sender_psid) {
+  mongoOxfam
+    .findByIdAndUpdate(sender_psid, { $set: { "answered.count": 0 } })
+    .then(() => startQuiz(sender_psid))
+    .catch(err => console.log("error during the restart of the quizz "));
+}
+
+function callSendAPIDirect(response) {
+  // Send the HTTP request to the Messenger Platform
+  request({
+    "uri": "https://graph.facebook.com/v2.6/me/messages",
+    "qs": { "access_token": process.env.PAGE_ACCESS_TOKEN },
+    "method": "POST",
+    "json": response
+  }, (err, res, body) => {
+    if (!err) {
+      console.log('message sent!')
+      console.dir(response);
+    } else {
+      console.error("Unable to send message:" + err);
+    }
+  });
 }
 
 function callSendAPI(sender_psdi, response) {
@@ -281,49 +284,7 @@ function callSendAPI(sender_psdi, response) {
     }
   });
 }
-// Sends response messages via the Send API
-async function callSendAPIasync(sender_psid, responses) {
 
-  var promiseTasks = [];
-  responses.forEach((response) =>
-    promiseTasks.push(promiseCallSendApi(sender_psid, response))
-  );
-
-
-  const queue = new PQueue({ concurrency: 1 });
-  return new Promise((resolve, reject) => {
-    queue.addAll(promiseTasks).then(() => { console.log("end resolve change postition"); resolve(); }).catch(err => reject);
-  });
-
-}
-
-function promiseCallSendApi(sender_psid, response) {
-  return new Promise((resolve, reject) => {
-    let request_body = {
-      "recipient": {
-        "id": sender_psid
-      },
-      "message": response
-    }
-
-    // Send the HTTP request to the Messenger Platform
-    request({
-      "uri": "https://graph.facebook.com/v2.6/me/messages",
-      "qs": { "access_token": process.env.PAGE_ACCESS_TOKEN },
-      "method": "POST",
-      "json": request_body
-    }, (err, res, body) => {
-      if (!err) {
-        resolve(response);
-        console.log('message sent!')
-        console.dir(response);
-      } else {
-        console.error("Unable to send message:" + err);
-        reject(err);
-      }
-    });
-  });
-}
 
 app.listen(process.env.PORT || 1337, () => debug('listen to ' + process.env.PORT));
 
