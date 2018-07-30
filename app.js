@@ -13,7 +13,7 @@ const mongoOxfam = require("./routes/mongoose");
 const dataJSON = require('./public/quiz.json');
 const chatJSON = require('./public/chat.json');
 const emojiJSON = require("emoji-datasource-messenger/emoji.json");
-const testemoji = require("emoji-data" ) ;
+const testemoji = require("emoji-data");
 
 const zero = testemoji.from_unified("0030-FE0F-20E3");
 const est = testemoji.find_by_short_name(":zero:");//app); 
@@ -33,23 +33,23 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
-async function handleMessageQuiz(psid, webhookMessage){
+async function handleMessageQuiz(psid, webhookMessage) {
 
-  const quick_reply = (webhookMessage ) ? webhookMessage.quick_reply : null;
-  let user = await mongoOxfam.findOne({ "PSID": psid});
+  const quick_reply = (webhookMessage) ? webhookMessage.quick_reply : null;
+  let user = await mongoOxfam.findOne({ "PSID": psid });
   let response;
   if (!user)
     user = await createUser(psid);
-   
+
   if (quick_reply) {
     user = await saveResult(user, quick_reply.payload);
   }
-  
+
   const anwsered_count = user.answered.count;
-  if ( anwsered_count == dataJSON.length ) {
+  if (anwsered_count == dataJSON.length) {
     const profil = getProfil(user);
-    return response = { 
-      "text": "Congrats ! Ton profil benevole est :  "+ chatJSON.profils[profil].text
+    return response = {
+      "text": "Congrats ! Ton profil benevole est :  " + chatJSON.profils[profil].text
     }
   }
   else if (anwsered_count < 0 || anwsered_count > dataJSON.length) {
@@ -57,12 +57,12 @@ async function handleMessageQuiz(psid, webhookMessage){
     await user.save();
     //res.status(400).send({ message: "error of database, please retry " });
   }
-  
+
   const content = dataJSON[anwsered_count];
   response = createQuickReplies(content);
-  
+
   return response;
- // res.status(200).send({ content: content, profil: profil, response : response });
+  // res.status(200).send({ content: content, profil: profil, response : response });
 }
 
 async function createUser(psid) {
@@ -73,14 +73,14 @@ async function createUser(psid) {
   return await user.save();
 }
 
- async function incrementCount(user) {
-   user.answered.count++;
-   return await user.save();
- }
+async function incrementCount(user) {
+  user.answered.count++;
+  return await user.save();
+}
 
 async function saveResult(user, payload) {
   const arrayName = payload.split("-");
-  user = await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": arrayName }});
+  user = await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": arrayName } });
   return await incrementCount(user);
 }
 
@@ -103,83 +103,74 @@ function getProfil(user) {
   }
   return maxEl;
 }
-// app.get('/', (req, res) => {
-
-// 	console.log('prout');
-// 	res.sendStatus(200, {message : " evrything is oké" });
-// 	});
 
 // mark_seen / typing_on / typing_off
-async function sendAction (sender_psid , action ) {
-        let test = {};
-  test = {
-  "recipient":{
-    "id":sender_psid
-  },
-  "sender_action":action
-}
-      
-   callSendAPIDirect(sender_psid, test);
+async function sendAction(sender_psid, action) {
+  let actionResponse = {
+    "recipient": {
+      "id": sender_psid
+    },
+    "sender_action": action
+  }
+
+  callSendAPIDirect(actionResponse);
 }
 
-async function sendTypingOn(sender_psid ) {
+async function sendTypingOn(sender_psid) {
+  sendAction(sender_psid, "typing_on");
 }
 
-async function sendTypingOff( sender_psid ) {
+async function sendTypingOff(sender_psid) {
+  sendAction(sender_psid, "typing_off");
 }
 
-function test (sender_psid, message ) {
-  handleMessageQuiz(sender_psid, message ).then( result =>   callSendAPI(sender_psid, result))
+async function sendMarkSeen(sender_psid ) {
+  sendAction(sender_psid, "mark_seen");
+}
+
+function test(sender_psid, message) {
+  handleMessageQuiz(sender_psid, message).then(result => callSendAPI(sender_psid, result))
 }
 
 app.post('/webhook', (req, res) => {
-
-  
-  
-  let body = req.body;
-console.log("hook webhook");
+  const body = req.body;
   if (body.object === 'page') {
+
     body.entry.forEach(entry => {
+
       // Gets the body of the webhook event
-      let webhook_event = entry.messaging[0];
+      const webhook_event = entry.messaging[0];
+      const  sender_psid = webhook_event.sender.id;
       webhookDebug(webhook_event);
 
       // Get the sender PSID
-      let sender_psid = webhook_event.sender.id;
       webhookDebug('Sender PSID: ' + sender_psid);
-      sendAction(sender_psid , "mark_seen");  
-      callSendAPI(sender_psid, "0030-FE0F-20E3");
+      sendMarkSeen(sender_psid);
 
-      
-
-      
       // Check if the event is a message or postback and
       // pass the event to the appropriate handler function
       if (webhook_event.message) {
-        sendAction(sender_psid , "typing_on");  
-         test(sender_psid, webhook_event);
-        setTimeout ( () => {
-          sendAction(sender_psid , "typing_off"); 
-          }, 2000);
-  //      setTimeout(()  => {
-    //                      }, 20 );
-        //if (webhook_event.message.quick_reply) {
-          
-         // handlePostback(sender_psid, webhook_event.message.quick_reply);
-      //  } else
-        //  handleMessage(sender_psid, webhook_event.message);
+        sendTypingOn(sender_psid);
+        
+        handleMessageQuiz(sender_psid, webhook_event.message)
+        .then(result => callSendAPI(sender_psid, result))
+        .then(() => sendTypingOff(sender_psid))
+        .catch(err => console.log("error during the handle of the message quiz "));
+    
       } else if (webhook_event.postback) {
+        // :: only if restart of start quizz 
         handlePostback(sender_psid, webhook_event);
       }
     });
+
     res.status(200).send('EVENT_RECEIVED');
+
   } else {
     res.sendStatus(404);
   }
 });
 
 app.get('/webhook', (req, res) => {
-  console.log('fucker');
   let VERIFY_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 
   let mode = req.query['hub.mode'];
@@ -197,11 +188,10 @@ app.get('/webhook', (req, res) => {
 });
 
 function createQuickReplies(question) {
-
   let quick_replies = [];
   let response = {};
   let attachment = {};
-  
+
   question.answers.forEach(answer => {
     let reply = {};
     reply.content_type = "text";
@@ -210,12 +200,12 @@ function createQuickReplies(question) {
 
     quick_replies.push(reply);
   });
-  attachment.type =  "image";
+  attachment.type = "image";
   attachment.payload = {
-    "url" : question.question,
-    "is_reusable" : false
+    "url": question.question,
+    "is_reusable": false
   };
-  
+
   response.attachment = attachment;
   response.quick_replies = quick_replies;
 
@@ -227,39 +217,32 @@ function handlePostback(sender_psid, webhook_event) {
 
   // Get the payload for the postback
   let payload = webhook_event.postback.payload;
-  
+
   // start quiz with the start button
-  if ( payload == "start_quiz" ) 
-    startQuiz(sender_psid, webhook_event.message );
-  else if ( payload == "reset_quiz") 
+  if (payload == "start_quiz")
+    startQuiz(sender_psid, webhook_event.message);
+  else if (payload == "reset_quiz")
     restartQuiz(sender_psid);
 }
 
-function startQuiz(sender_psid, message = null )
-{
-     let response = { "text": chatJSON.letsgo + zero.image };
-    callSendAPI(sender_psid, response);
-    
-    setTimeout(
-      () => {
-          handleMessageQuiz(sender_psid, message ).then( result =>   callSendAPI(sender_psid, result))
-      }, 1000 );
+function startQuiz(sender_psid, message = null) {
+  let response = { "text": chatJSON.letsgo + zero.image };
+  callSendAPI(sender_psid, response);
+
+  setTimeout(
+    () => {
+      handleMessageQuiz(sender_psid, message).then(result => callSendAPI(sender_psid, result))
+    }, 1000);
 }
 
-function restartQuiz(sender_psid) 
-{
+function restartQuiz(sender_psid) {
   mongoOxfam
-    .findByIdAndUpdate(sender_psid, { $set :{ "answered.count" : 0 }})
+    .findByIdAndUpdate(sender_psid, { $set: { "answered.count": 0 } })
     .then(() => startQuiz(sender_psid))
     .catch(err => console.log("error during the restart of the quizz "));
 }
 
-function parsePayload(payload) {
-  return payload.split('-');
-}
-
-function callSendAPIDirect( sender_psid, response ) {
-
+function callSendAPIDirect(response) {
   // Send the HTTP request to the Messenger Platform
   request({
     "uri": "https://graph.facebook.com/v2.6/me/messages",
