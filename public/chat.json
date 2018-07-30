@@ -1,5 +1,5 @@
 {
-	"greetings": " Salut à toi ! Kenny vous présente… \n Découvre quel est ton profil de bénévole en répondant à ces questions ! ",
+	"greetings": " Salut à toi ! Kenny vous présente… : Découvre quel est ton profil de bénévole en répondant à ces questions ! ",
 	"reset" : {
 			"type":"template",
 			"payload":{
@@ -27,14 +27,29 @@
 		}, 
 		{
 			"type":"postback",
-			"title":"Non pas tout de suite",
-			"payload":""
+			"title":"Non, attend ",
+			"payload":"wait"
+		}
+	  ]
+	}
+}, 
+  "wait" : {
+	"type":"template",
+	"payload":{
+	  "template_type":"button",
+	  "text":"Dis moi \" continuer \" ou appuie sur ce bouton pour reprendre ",
+	  "buttons":[
+		{
+		  "type":"postback",
+		  "title":"Reprendre le quiz",
+		  "payload":"resume"
 		}
 	  ]
 	}
 },
+  
   "letsgo": "Okay c'est parti ! ",
-	"message": "Tu ne veux pas finir le quiz ? ",
+	"stop": "Tu ne veux pas finir le quiz ? ",
 	"continue": "Si tu veux reprendre le quiz, dis-le moi avec 'continuer', ou en cliquant sur le bouton :)",
 	"profils": {
 		"LIS": {

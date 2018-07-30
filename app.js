@@ -41,15 +41,12 @@ function sleep(ms){
 
 async function handleMessageQuiz(psid, webhookMessage) {
 
-  const quick_reply = (webhookMessage) ? webhookMessage.quick_reply : null;
   let user = await mongoOxfam.findOne({ "PSID": psid });
   let response;
   if (!user)
     user = await createUser(psid);
-
-  if (quick_reply) {
-    user = await saveResult(user, quick_reply.payload);
-  }
+  else if ( webhookMessage && webhookMessage.quick_reply )
+    user = await saveResult(user, webhookMessage.quick_reply.payload);
 
   const anwsered_count = user.answered.count;
   if (anwsered_count == dataJSON.length) {
@@ -134,11 +131,8 @@ async function sendMarkSeen(sender_psid ) {
   sendAction(sender_psid, "mark_seen");
 }
 
-function test(sender_psid, message) {
-  handleMessageQuiz(sender_psid, message).then(result => callSendAPI(sender_psid, result))
-}
 
-app.post('/webhook', (req, res) => {
+app.post('/webhook', async (req, res) => {
   const body = req.body;
   if (body.object === 'page') {
 
@@ -152,22 +146,30 @@ app.post('/webhook', (req, res) => {
       // Get the sender PSID
       webhookDebug('Sender PSID: ' + sender_psid);
       sendMarkSeen(sender_psid);
+        console.dir('webhook event' + webhook_event);
 
       // Check if the event is a message or postback and
       // pass the event to the appropriate handler function
       if (webhook_event.message) {
-        if ( webhook_event.message === "recommencer") {
-          restartQuiz(sender_psid);
-          continue;
+       
+        if ( webhook_event.message.quick_reply ) {
+          sendTypingOn(sender_psid);
+
+          handleMessageQuiz(sender_psid, webhook_event.message)
+          .then(result => callSendAPI(sender_psid, result))
+          .then(() => sendTypingOff(sender_psid))
+          .catch(err => console.log("error during the handle of the message quiz "));
+        } 
+        else if (webhook_event.message.text) {
+          console.log("message : " + webhook_event.message.text);
+         if (/continuer/.test(webhook_event.message.text.toLowerCase()))
+          startQuiz(sender_psid, webhook_event.message);
+         else if (/recommencer/.test(webhook_event.message.text.toLowerCase()))
+            restartQuiz(sender_psid);
+        else 
+          waitReadyState(sender_psid);
         }
         
-        sendTypingOn(sender_psid);
-        
-        handleMessageQuiz(sender_psid, webhook_event.message)
-        .then(result => callSendAPI(sender_psid, result))
-        .then(() => sendTypingOff(sender_psid))
-        .catch(err => console.log("error during the handle of the message quiz "));
-    
       } else if (webhook_event.postback) {
         // :: only if restart of start quizz 
         handlePostback(sender_psid, webhook_event);
@@ -197,6 +199,24 @@ app.get('/webhook', (req, res) => {
     }
   }
 });
+
+async function waitReadyState(sender_psid ) {
+  let response = {"text": chatJSON.stop };
+  
+  sendTypingOn(sender_psid);
+  await sleep(2000);
+  sendTypingOff(sender_psid);
+
+  callSendAPI(sender_psid, response);
+  
+  response = {"attachment": chatJSON.wait };
+  
+  sendTypingOn(sender_psid);
+  await sleep(2000);
+  sendTypingOff(sender_psid);
+
+  callSendAPI(sender_psid, response);
+}
 
 function createQuickReplies(question) {
   let quick_replies = [];
@@ -230,34 +250,45 @@ function handlePostback(sender_psid, webhook_event) {
   let payload = webhook_event.postback.payload;
 
   // start quiz with the start button
-  if (payload == "start_quiz")
+  if (payload == "start_quiz" || payload == "resume" )
     startQuiz(sender_psid, webhook_event.message);
   else if (payload == "reset_quiz")
     restartQuiz(sender_psid);
   else if ( payload == "start_conversation")
     startConversation(sender_psid);
+  else if ( payload == "wait" ) 
+    pauseConversation(sender_psid);
 }
 
+async function pauseConversation (sender_psid ) {
+  let response = { "attachment": chatJSON.wait };
+  callSendAPI(sender_psid, response);
+
+  sendTypingOn(sender_psid);
+  await sleep(2000);
+  sendTypingOff(sender_psid);
+}
+  
 async function startConversation(sender_psid) {
   let response = { "text": chatJSON.greetings };
   callSendAPI(sender_psid, response);
 
   sendTypingOn(sender_psid);
-  await sleep(1000);
+  await sleep(2000);
   sendTypingOff(sender_psid);
 
-  let response = {"attachment": chatJSON.reset };
+  response = {"attachment": chatJSON.reset };
   callSendAPI(sender_psid, response);
 
   sendTypingOn(sender_psid);
-  await sleep(1000);
+  await sleep(2000);
   sendTypingOff(sender_psid);
 
-  let response = { "text": chatJSON.letsgo };
+  response = { "attachment": chatJSON.start };
   callSendAPI(sender_psid, response);
 }
 
-function startQuiz(sender_psid, message = null) {
+async function startQuiz(sender_psid, message = null) {
   let response = { "text": chatJSON.letsgo };
   callSendAPI(sender_psid, response);
 
@@ -271,7 +302,7 @@ function startQuiz(sender_psid, message = null) {
 
 function restartQuiz(sender_psid) {
   mongoOxfam
-    .findByIdAndUpdate(sender_psid, { $set: { "answered.count": 0 } })
+    .findOneAndUpdate ({"PSID" : sender_psid }, { $set: { "answered.count": 0 } })
     .then(() => startQuiz(sender_psid))
     .catch(err => console.log("error during the restart of the quizz "));
 }
@@ -285,8 +316,8 @@ function callSendAPIDirect(response) {
     "json": response
   }, (err, res, body) => {
     if (!err) {
-      console.log('message sent!')
-      console.dir(response);
+      //console.log('message sent!')
+      //console.dir(response);
     } else {
       console.error("Unable to send message:" + err);
     }
