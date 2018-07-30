@@ -1,7 +1,38 @@
 {
 	"greetings": " Salut à toi ! Kenny vous présente… \n Découvre quel est ton profil de bénévole en répondant à ces questions ! ",
-	"reset" : 'Si tu veux recommencer en cours de route, appuie sur ce bouton ou envoie moi : "recommencer" ',
-  "start" : "Tu es prêt ? ",
+	"reset" : {
+			"type":"template",
+			"payload":{
+			  "template_type":"button",
+			  "text":"Si tu veux recommencer en cours de route, appuie sur ce bouton ou envoie moi : \"recommencer\" ",
+			  "buttons":[
+				{
+				  "type":"postback",
+				  "title":"Recommencer",
+				  "payload":"reset_quiz"
+				}
+			  ]
+			}
+	},
+  "start" : {
+	"type":"template",
+	"payload":{
+	  "template_type":"button",
+	  "text":"Tu es prêt ?",
+	  "buttons":[
+		{
+		  "type":"postback",
+		  "title":"Oui !",
+		  "payload":"start_quiz"
+		}, 
+		{
+			"type":"postback",
+			"title":"Non pas tout de suite",
+			"payload":""
+		}
+	  ]
+	}
+},
   "letsgo": "Okay c'est parti ! ",
 	"message": "Tu ne veux pas finir le quiz ? ",
 	"continue": "Si tu veux reprendre le quiz, dis-le moi avec 'continuer', ou en cliquant sur le bouton :)",
