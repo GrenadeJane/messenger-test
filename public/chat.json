@@ -1,4 +1,5 @@
 {
+  "random" : [ "blabla", "oyeah", "nope", "tes sur de toi la ? ", "perso, je n'aurai pas dit ca"],
 	"greetings": " Salut à toi ! Kenny vous présente… : Découvre quel est ton profil de bénévole en répondant à ces questions ! ",
 	"reset" : {
 			"type":"template",

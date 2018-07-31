@@ -43,6 +43,25 @@ app.get('/dynamic-webview', (req, res) => {
   res.render('template', chatJSON.profils[result]);
 });
 
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+
+async function getRandomSentence(sender_psid) {
+  if ( getRandomInt(4) <= 1 ){
+    const num = getRandomInt(chatJSON.random.length - 1);
+    sendTypingOn(sender_psid);
+    await sleep(3000);
+    sendTypingOff(sender_psid);
+    
+    let response = { "text": chatJSON.random[num] };
+
+    callSendAPI(sender_psid, response);
+  }
+  else 
+    return null;
+}
+
 function sleep(ms){
   return new Promise(resolve=>{
       setTimeout(resolve,ms)
@@ -50,14 +69,18 @@ function sleep(ms){
 }
 
 async function handleMessageQuiz(psid, webhookMessage) {
-
+  await sleep(3000);
   let user = await mongoOxfam.findOne({ "PSID": psid });
   let response;
   if (!user)
     user = await createUser(psid);
-  else if ( webhookMessage && webhookMessage.quick_reply )
+  else if ( webhookMessage && webhookMessage.quick_reply ) {
     user = await saveResult(user, webhookMessage.quick_reply.payload);
-
+    await sleep (3000);
+    await getRandomSentence(psid);
+    await sleep(3000);
+  }
+  
   const anwsered_count = user.answered.count;
   if (anwsered_count == dataJSON.length) {
     const profil = getProfil(user);
@@ -162,7 +185,7 @@ app.post('/webhook', async (req, res) => {
        
         if ( webhook_event.message.quick_reply ) {
           sendTypingOn(sender_psid);
-
+          
           handleMessageQuiz(sender_psid, webhook_event.message)
           .then(result => callSendAPI(sender_psid, result))
           .then(() => sendTypingOff(sender_psid))
@@ -234,9 +257,9 @@ function createWebviewResult ( profil ) {
         "template_type":"generic",
         "elements":[
            {
-            "title":"Here is your result !",
-            "image_url":"https://petersfancybrownhats.com/company_image.png",
-            "subtitle":"Click to discover your Oxfam's profile",
+            "title":"Voici ton résultat !",
+         //   "image_url":"https://petersfancybrownhats.com/company_image.png",
+            "subtitle":"Clique sur ce lien pour savoir quel cousin Oxfam tu es !",
             "default_action": {
               "type": "web_url",
               "url": "https://bubble-message.glitch.me/dynamic-webview?result="+ profil,
