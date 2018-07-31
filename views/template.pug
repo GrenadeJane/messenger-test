@@ -1,0 +1,20 @@
+doctype html 
+
+head 
+  title Résultat !
+body 
+  script.
+    (function(d, s, id){
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/messenger.Extensions.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'Messenger'));
+    window.extAsyncInit = function() {
+      // the Messenger Extensions JS SDK is done loading 
+    };
+  h1 #{title}
+  main 
+    img(src="https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/random_woman.jpeg", title=title)
+  p #{text}

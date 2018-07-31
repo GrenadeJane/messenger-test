@@ -36,6 +36,11 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
+app.get('/dynamic-webview', (req, res) => {
+  const {result} = req.query;
+  res.render('template', chatJSON.profils[result]);
+});
+
 function sleep(ms){
   return new Promise(resolve=>{
       setTimeout(resolve,ms)
@@ -141,10 +146,13 @@ app.post('/webhook', async (req, res) => {
 
     body.entry.forEach(entry => {
 
+   
       // Gets the body of the webhook event
       const webhook_event = entry.messaging[0];
       const  sender_psid = webhook_event.sender.id;
-      webhookDebug(webhook_event);
+         let reponse = createWebviewResult("ALI");
+      callSendAPI(sender_psid, reponse);
+   /*   webhookDebug(webhook_event);
 
       // Get the sender PSID
       webhookDebug('Sender PSID: ' + sender_psid);
@@ -176,14 +184,14 @@ app.post('/webhook', async (req, res) => {
       } else if (webhook_event.postback) {
         // :: only if restart of start quizz 
         handlePostback(sender_psid, webhook_event);
-      }
+      }*/
     });
-
+  }
     res.status(200).send('EVENT_RECEIVED');
 
-  } else {
-    res.sendStatus(404);
-  }
+  //} else {
+   // res.sendStatus(404);
+  //}
 });
 
 app.get('/webhook', (req, res) => {
@@ -219,6 +227,31 @@ async function waitReadyState(sender_psid ) {
   sendTypingOff(sender_psid);
 
   callSendAPI(sender_psid, response);
+}
+
+function createWebviewResult ( profil ) {
+    return {
+      "attachment":{
+      "type":"template",
+      "payload":{
+        "template_type":"generic",
+        "elements":[
+           {
+            "title":"Here is your result !",
+            "image_url":"https://petersfancybrownhats.com/company_image.png",
+            "subtitle":"Click to discover your Oxfam's profile",
+            "default_action": {
+              "type": "web_url",
+              "url": "https://bubble-message.glitch.me/dynamic-webview?result=${profil}",
+              "messenger_extensions": true,
+              "webview_height_ratio": "tall",
+              "fallback_url": "https://bubble-message.glitch.me/dynamic-webview"
+            }  
+          }
+        ]
+      }
+    }
+   }
 }
 
 function createQuickReplies(question) {
