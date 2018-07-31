@@ -37,7 +37,9 @@ app.use(function (err, req, res, next) {
 });
 
 app.get('/dynamic-webview', (req, res) => {
-  const {result} = req.query;
+  let {result} = req.query;
+  result = (result ) ? result : "BEN";
+  console.log(result);
   res.render('template', chatJSON.profils[result]);
 });
 
@@ -59,21 +61,17 @@ async function handleMessageQuiz(psid, webhookMessage) {
   const anwsered_count = user.answered.count;
   if (anwsered_count == dataJSON.length) {
     const profil = getProfil(user);
-    return response = {
-      "text": "Congrats ! Ton profil benevole est :  " + chatJSON.profils[profil].text
-    }
+    return createWebviewResult(profil);
   }
   else if (anwsered_count < 0 || anwsered_count > dataJSON.length) {
     user.answered.count = 0;
     await user.save();
-    //res.status(400).send({ message: "error of database, please retry " });
   }
 
   const content = dataJSON[anwsered_count];
   response = createQuickReplies(content);
 
   return response;
-  // res.status(200).send({ content: content, profil: profil, response : response });
 }
 
 async function createUser(psid) {
@@ -150,9 +148,8 @@ app.post('/webhook', async (req, res) => {
       // Gets the body of the webhook event
       const webhook_event = entry.messaging[0];
       const  sender_psid = webhook_event.sender.id;
-         let reponse = createWebviewResult("ALI");
-      callSendAPI(sender_psid, reponse);
-   /*   webhookDebug(webhook_event);
+  
+     webhookDebug(webhook_event);
 
       // Get the sender PSID
       webhookDebug('Sender PSID: ' + sender_psid);
@@ -184,14 +181,14 @@ app.post('/webhook', async (req, res) => {
       } else if (webhook_event.postback) {
         // :: only if restart of start quizz 
         handlePostback(sender_psid, webhook_event);
-      }*/
+      }
     });
-  }
+  
     res.status(200).send('EVENT_RECEIVED');
 
-  //} else {
-   // res.sendStatus(404);
-  //}
+  } else {
+    res.sendStatus(404);
+  }
 });
 
 app.get('/webhook', (req, res) => {
@@ -242,10 +239,10 @@ function createWebviewResult ( profil ) {
             "subtitle":"Click to discover your Oxfam's profile",
             "default_action": {
               "type": "web_url",
-              "url": "https://bubble-message.glitch.me/dynamic-webview?result=${profil}",
+              "url": "https://bubble-message.glitch.me/dynamic-webview?result="+ profil,
               "messenger_extensions": true,
               "webview_height_ratio": "tall",
-              "fallback_url": "https://bubble-message.glitch.me/dynamic-webview"
+              "fallback_url": "https://bubble-message.glitch.me/dynamic-webview?result="+ profil
             }  
           }
         ]
@@ -338,7 +335,7 @@ async function startQuiz(sender_psid, message = null) {
 
 function restartQuiz(sender_psid) {
   mongoOxfam
-    .findOneAndUpdate ({"PSID" : sender_psid }, { $set: { "answered.count": 0 } })
+    .findOneAndUpdate ({"PSID" : sender_psid }, { $set: { "answered.count": 0 , "result" : [] } })
     .then(() => startQuiz(sender_psid))
     .catch(err => console.log("error during the restart of the quizz "));
 }

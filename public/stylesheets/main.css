@@ -1,0 +1,60 @@
+@font-face {
+    font-family: 'Oxfam Global Headline';
+    src: url('https://cdn.glitch.com/7cba3431-8634-4de0-bbf2-48792c90b307%2FOxfamGlobalHeadline-Regular.eot');
+    src: url('./assets/OxfamGlobalHeadline-Regular.eot?#iefix') format('embedded-opentype'),
+        url('https://cdn.glitch.com/7cba3431-8634-4de0-bbf2-48792c90b307%2FOxfamGlobalHeadline-Regular.woff') format('woff'),
+        url('https://cdn.glitch.com/7cba3431-8634-4de0-bbf2-48792c90b307%2FOxfamGlobalHeadline-Regular.ttf')  format('truetype'), /* Safari, Android, iOS */
+        url('https://cdn.glitch.com/7cba3431-8634-4de0-bbf2-48792c90b307%2FOxfamGlobalHeadline-Regular.svg') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.answer {
+  background-color: transparent;
+  vertical-align: middle;
+  text-align: center;
+  outline-style: dashed; 
+  outline-color : #61A534;
+  padding : 10px 10px 10px 10px;
+  width : 90%;
+  font-size:3vw;
+  font-family: Arial, Helvetica, "Nimbus Sans L", sans-serif;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top : 40px;
+}
+
+.imgAnswer {
+  background-color: transparent;
+  text-align: center;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 90%;
+  max-height : 40%;
+}
+
+.header {
+  display : block;
+  margin : 5px 0px 40px 0px;
+}
+.header img {
+  float: left;
+  padding-top : 1vw;
+  width: 10vw;
+  height: 10vw;
+}
+
+.header h1 {
+  position: relative;
+  top: 10px;
+  left : 10px;
+  margin : 10px;
+  background-color: transparent;
+  vertical-align: middle;
+  text-align: center;
+  font-size:6vw;
+  font-family: "Oxfam Global Headline";
+  font-weight: bold;
+  color : #61A534;
+}
