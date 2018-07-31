@@ -225,7 +225,6 @@ function createQuickReplies(question) {
 
 // Handles messaging_postbacks events
 function handlePostback(sender_psid, webhook_event) {
-
   // Get the payload for the postback
   let payload = webhook_event.postback.payload;
 
@@ -243,7 +242,7 @@ async function startConversation(sender_psid) {
   callSendAPI(sender_psid, response);
 
   sendTypingOn(sender_psid);
-  await sleep(1000);
+  await sleep(2000);
   sendTypingOff(sender_psid);
 
   let response = {"attachment": chatJSON.reset };
