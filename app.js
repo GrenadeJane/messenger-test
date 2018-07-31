@@ -19,6 +19,9 @@ const zero = testemoji.from_unified("0030-FE0F-20E3");
 const est = testemoji.find_by_short_name(":zero:");//app); 
 // :: Dependencies in the personal code
 
+app.set('view engine', 'pug');
+app.set('views', './views');
+
 app.use(logger('dev', 'tiny'));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
