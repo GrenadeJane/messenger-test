@@ -57,48 +57,56 @@
       "1" : { "profils": ["GIU","LIS"]},
       "2" : { "profils": "BIL"},
       "3" : { "profils": ["PHI","BEN"]}
+  }, 
+  {
+    "master_response" : [{"text" : "Ha, comme moi ! J’adore ça ! 👍👍👍"}],
+    "0" : { "profils": "BEN"},
+    "1" : { "profils": ["LIS","BIL"]},
+    "2" : { "profils": ["GIU","CLE"]},
+    "3" : { "profils": ["PHI","ALI"]}
+  },
+  {
+  "master_response" : [
+      {"text" : "Il y a aussi le signe astrologique. C’est quoi le tien ?"}, 
+      {"text" : "Cool 🌎🌌 ⭐"}
+    ],
+    "0" : { "profils": ["CLE","BIL"]},
+    "1" : { "profils": ["BEN","ALI","GIU"]},
+    "2" : { "profils": "LIS"},
+    "3" : { "profils": "PHI"}
+  }, 
+	[
+    { "response": {"text" : "Si tu veux allier sport et solidarité, l’Oxfam trailwalker est fait pour toi !"},"profils": ["ALI","GIU"]},
+    { "response": {"text" : "Il n’y en pas 2 comme celle-là, protégeons-la !"},"profils": ["CLE","PHI"]},
+    { "response": {"text" : "Et si tu te lançais dans le zéro déchet ?"},"profils": ["BIL","BEN"]},
+    { "response": {"text" : "Un petit creux ? 😉"},"profils": "LIS"}
+  ],
+  {
+    "master_response" : [{"text" : "Allez, demain tu y files 😄"}],
+    "0" : {"profils": ["LIS","ALI"]},
+    "1" : {"profils": "CLE"},
+    "2" : {"profils": ["BIL","PHI"]},
+    "3" : {"profils": ["BEN","GIU"]}
+  },
+  {
+    "master_response" : [{"text" : "Confidence : je dors encore avec un doudou ☺️"}],
+    "0" : { "profils": ["PHI","ALI"]},
+    "1" : { "profils": "BEN"},
+    "2" : { "profils": ["CLE","LIS"]},
+    "3" : { "profils": ["GIU","BIL"]}
+  },
+  {
+    "master_response" : [{"text" : "C’est tout toi ! Allez une dernière question, puis après les résultats !"}],
+    "0" : { "profils": "ALI"},
+    "1" : { "profils": ["PHI","LIS"]},
+    "2" : { "profils": ["BEN","CLE"]},
+    "3" : { "profils": ["BIL","GIU"]}
+  },
+  {
+    "master_response" : [{"text" : "Le test est fini ! Merci d’avoir participé. Tu vas découvrir dans quelques secondes ton profil de bénévole. Quel sera ton style ? Ah, j’ai hâte de savoir !N’hésite pas à aller voir tous les profils sur notre page www.omdm.be/agir et à partager ton profil avec tes ami.e.s !"}],
+    "0" : { "profils": ["BEN","BIL"]},
+    "1" : { "profils": ["PHI","CLE"]},
+    "2" : { "profils": ["GIU","LIS"]},
+    "3" : { "profils": "ALI"}
   }
-  ,
-  [
-    { "response": "1. 🙋🏻","profils": "BEN"},
-    { "response": "2. 🍸","profils": "LIS-BIL"},
-    { "response": "3. 🎵","profils": "GIU-CLE"},
-    { "response": "4. 🎩","profils": "PHI-ALI"}
-  ],
-	[
-    { "response": "1️⃣","profils": "CLE-BIL"},
-    { "response": "2️⃣","profils": "BEN-ALI-GIU"},
-    { "response": "3️⃣","profils": "LIS"},
-    { "response": "4️⃣","profils": "PHI"}
-  ],
-	[
-    { "response": "1️⃣","profils": "ALI-GIU"},
-    { "response": "2️⃣","profils": "CLE-PHI"},
-    { "response": "3️⃣","profils": "BIL-BEN"},
-    { "response": "4️⃣","profils": "LIS"}
-  ],
-	[
-    { "response": "1. 🛀🏻","profils": "LIS-ALI"},
-    { "response": "2. 🚆","profils": "CLE"},
-    { "response": "3. 🛍️","profils": "BIL-PHI"},
-    { "response": "4. 🏖️","profils": "BEN-GIU"}
-  ],
-  [
-    { "response": "1️⃣","profils": "PHI-ALI"},
-    { "response": "2️⃣","profils": "BEN"},
-    { "response": "3️⃣","profils": "CLE-LIS"},
-    { "response": "4️⃣","profils": "GIU-BIL"}
-  ],
-  [
-    { "response": "1. 🌎","profils": "ALI"},
-    { "response": "2. 👗","profils": "PHI-LIS"},
-    { "response": "3. 🏠","profils": "BEN-CLE"},
-    { "response": "4. 📺","profils": "BIL-GIU"}
-  ],
-	[
-    { "response": "1. 📱","profils": "BEN-BIL"},
-    { "response": "2. 🎧","profils": "PHI-CLE"},
-    { "response": "3. 🎸","profils": "GIU-LIS"},
-    { "response": "4. 🐦","profils": "ALI"}
-  ]
 ]

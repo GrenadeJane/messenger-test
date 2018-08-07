@@ -54,14 +54,15 @@ function sleep(ms){
 }
 
 async function sendMultipleResponse(user) {
-  if ( user.waitingResponseCount < responseJSON[user.waitingResponseCount].master_response.length) {
-    await sendTextAnswer(user.PSID, responseJSON[user.awaitingResponseCount].master_response[user.waitingResponseCount]);
+  
+    await sendTextAnswer(user.PSID, responseJSON[user.answered.count].master_response[user.waitingResponseCount]);
     user.waitingResponseCount++;
-    return await user.save();
-  }
-  else {
+    await user.save();
+  
+  if ( user.waitingResponseCount == responseJSON[user.answered.count].master_response.length) {
     user.waitingResponseCount = 0;
     user.waitForUserResponse = false;
+    user.answered.count ++;
     await user.save();
     handleMessageQuiz(user.PSID);
   }
@@ -69,27 +70,29 @@ async function sendMultipleResponse(user) {
 
 async function answerToPayload(user, questionIndex, payloadIndex ) {
   const responsePayload = responseJSON[questionIndex];
+  let waitResponse = false;
   // one response for all the payload
   if ( responsePayload.master_response ) 
   {
     // if there is more than one sentence, wait that the user answer between them
     if ( responsePayload.master_response.length > 0 ) 
-      await changeWaitStatusUser(user.PSID, true);
+      waitResponse = true;
     // bot send text answer 
     await sendMultipleResponse(user);
      //sendTextAnswer(user, responsePayload.master_response[0]);
   } else {
     if ( responsePayload[payloadIndex].response.attachment )
-      await changeWaitStatusUser(user.PSID, true);
-      
+      waitResponse= true;
+    
      await sendTextAnswer(user.PSID, responsePayload[payloadIndex].response);
   }
-  return user.waitForUserResponse;
+  
+  await changeWaitStatusUser(user.PSID, waitResponse);
+  return waitResponse;
 }
 
 async function changeWaitStatusUser(psid, state){
-   let user = await mongoOxfam.findOneAndUpdate ({"PSID" : psid }, { $set : { "waitForUserResponse" : state } });
-   await user.save();
+   return await mongoOxfam.findOneAndUpdate ({"PSID" : psid }, { $set : { "waitForUserResponse" : state } });
 }
 
 function IsLastQuestion(count)
@@ -100,6 +103,7 @@ function IsLastQuestion(count)
 async function handleMessageQuiz(psid, webhookMessage) {
   // get user in the database from the psid
   let user = await mongoOxfam.findOne({ "PSID": psid });
+  let anwsered_count = user ? user.answered.count:0 ; 
 
   // if psid start conversation
   if (!user)
@@ -112,9 +116,9 @@ async function handleMessageQuiz(psid, webhookMessage) {
     user = await saveResult(user, webhookMessage);
     if ( waitForResponse )
       return;
+    
+     anwsered_count = await incrementCount(user);
   }
-
-  anwsered_count = await incrementCount(user);
 
   // the quiz is finished ?
   if (IsLastQuestion(anwsered_count)) {
@@ -126,12 +130,13 @@ async function handleMessageQuiz(psid, webhookMessage) {
     const content = dataJSON[anwsered_count];
     const response = createQuickReplies(content);
     callSendAPI(psid, response);
+    
 }
 
   // saving profils sended by psid though payloads
 async function saveResult(user, webhookMessage ) {
   let profils = responseJSON[user.answered.count][webhookMessage.quick_reply.payload].profils; 
-  await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": profils } });
+  return await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": profils } });
 }
 
 
@@ -149,6 +154,10 @@ async function incrementCount(user) {
   return user.answered.count;
 }
 
+async function incrementCountPSID ( psid ) {
+  const user = await mongoOxfam.findOne ({"PSID" : psid });
+  await incrementCount(user);
+}
 
 function getProfil(user) {
   const array = user.result;
@@ -221,7 +230,7 @@ app.post('/webhook', async (req, res) => {
           sendTypingOn(sender_psid);
           
           handleMessageQuiz(sender_psid, webhook_event.message)
-          .catch(err => console.log("error during the handle of the message quiz "));
+          .catch(err => console.log("error during the handle of the message quiz " + err ));
         } 
         else if (webhook_event.message.text) {
           console.log("message : " + webhook_event.message.text);
@@ -352,10 +361,11 @@ function handlePostback(sender_psid, webhook_event) {
       
 }
 
-function responseAndContinueQuiz(sender_psid, payload)
+async function responseAndContinueQuiz(sender_psid, payload)
 {
-    changeWaitStatusUser(sender_psid,false);
-    sendTextAnswer(sender_psid, { "text": chatJSON[payload] });
+    await changeWaitStatusUser(sender_psid,false);
+    await sendTextAnswer(sender_psid, { "text": chatJSON[payload] });
+    await incrementCountPSID(sender_psid);
     handleMessageQuiz(sender_psid);
 }
 
