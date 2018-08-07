@@ -60,8 +60,8 @@ async function sendMultipleResponse(user) {
     return await user.save();
   }
   else {
+    user.waitingResponseCount = 0;
     user.waitForUserResponse = false;
-    await incrementCount(user);
     await user.save();
     handleMessageQuiz(user.PSID);
   }
@@ -92,40 +92,48 @@ async function changeWaitStatusUser(psid, state){
    await user.save();
 }
 
+function IsLastQuestion(count)
+{
+    return count === dataJSON.length;
+}
+
 async function handleMessageQuiz(psid, webhookMessage) {
-  await sleep(3000);
+  // get user in the database from the psid
   let user = await mongoOxfam.findOne({ "PSID": psid });
-  let anwsered_count = user ? (user.answered.count > 0 ? user.answered.count : 0 ) : 0;
-   let waitForResponse;
-  let response;
+
+  // if psid start conversation
   if (!user)
     user = await createUser(psid);
+
+  // if psid continue conversation 
   else if ( webhookMessage && webhookMessage.quick_reply ) {
-    let profils = responseJSON[anwsered_count][webhookMessage.quick_reply.payload].profils; 
-    await sleep(3000);
+    // get bot's answer
     const waitForResponse = await answerToPayload(user, anwsered_count, webhookMessage.quick_reply.payload);
-    if ( !waitForResponse )
-      anwsered_count = await incrementCount(user);
-    
-    user = await saveResult(user, profils);
+    user = await saveResult(user, webhookMessage);
+    if ( waitForResponse )
+      return;
   }
-  
-  if (anwsered_count == dataJSON.length) {
+
+  anwsered_count = await incrementCount(user);
+
+  // the quiz is finished ?
+  if (IsLastQuestion(anwsered_count)) {
     const profil = getProfil(user);
     return createWebviewResult(profil);
   }
-  else if (anwsered_count < 0 || anwsered_count > dataJSON.length) {
-    user.answered.count = 0;
-    await user.save();
-  }
 
-  const content = dataJSON[anwsered_count];
-  if ( !waitForResponse  ){
-    response = createQuickReplies(content);
+  // create response with quick replies
+    const content = dataJSON[anwsered_count];
+    const response = createQuickReplies(content);
     callSendAPI(psid, response);
-    sendTypingOff(psid);
-  }
 }
+
+  // saving profils sended by psid though payloads
+async function saveResult(user, webhookMessage ) {
+  let profils = responseJSON[user.answered.count][webhookMessage.quick_reply.payload].profils; 
+  await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": profils } });
+}
+
 
 async function createUser(psid) {
   console.log("create new user with the psid : " + psid);
@@ -141,9 +149,6 @@ async function incrementCount(user) {
   return user.answered.count;
 }
 
-async function saveResult(user, profils) {
-   await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": profils } });
-}
 
 function getProfil(user) {
   const array = user.result;
