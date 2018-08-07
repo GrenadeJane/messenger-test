@@ -1,6 +1,6 @@
+
 {
   "random" : [ "blabla", "oyeah", "nope", "tes sur de toi la ? ", "perso, je n'aurai pas dit ca"],
-	"greetings": " Salut à toi ! Kenny vous présente… : Découvre quel est ton profil de bénévole en répondant à ces questions ! ",
 	"reset" : {
 			"type":"template",
 			"payload":{
@@ -48,38 +48,11 @@
 	  ]
 	}
 },
-  
-  "letsgo": "Okay c'est parti ! ",
+	"greetings": " Salut ! Je m’appelle Kenny, je fais partie de l’Oxfamily ! Ça te dit un petit test pour découvrir quel est ton profil de bénévole ? /n Prêt.e ?",
+  "ended" : "Le test est fini ! Merci d’avoir participé. Tu vas découvrir dans quelques secondes ton profil de bénévole. Quel sera ton style ? Ah, j’ai hâte de savoir ! \n N’hésite pas à aller voir tous les profils sur notre page www.omdm.be/agir et à partager ton profil avec tes ami.e.s !",
+  "letsgo": "C’est parti !",
 	"stop": "Tu ne veux pas finir le quiz ? ",
 	"continue": "Si tu veux reprendre le quiz, dis-le moi avec 'continuer', ou en cliquant sur le bouton :)",
-	"profils": {
-		"LIS": {
-			"title": "Liselotte, la cuistote",
-			"text": "Liselotte pour se détendre aime faire la popote : onglet à l’échalote, jus de carotte, glace aux griottes. Les supermarchés, elle les boycotte Elle adore partager sa passion avec ses potes. Quand quelqu’un.e a la bougeotte, elle est toujours la première à ouvrir sa porte. Que tu aimes le quinoa, le chocolat ou le chocolat au quinoa, ou encore conseiller des accords mets-vins, cuisiner pour faire passer des idées, proposer à un resto de passer au bio, il y a mille et une façons d’agir avec Oxfam-Magasins du monde, viens les découvrir sur"
-		},
-		"BIL": {
-			"title": "Bilal le commercial",
-			"text": "Bilal veut inverser la spirale négative de la production industrielle aux niveaux environnemental et social. Pour lui, le commerce équitable est une réponse crédible face aux pratiques commerciales déloyales. Il a une devise : « penser global, agir local ». Que tu aimes gérer un magasin, rencontrer des petit.e.s producteurs/trices de ton coin ou d’un peu plus loin, créer des réseaux de vente alternatifs dans ta commune et au-delà, il y a mille et une façons d’agir avec Oxfam-Magasins du monde, viens les découvrir sur"
-		},
-		"ALI": {
-			"title": "Alice l’animatrice",
-			"text": "Alice est une agitatrice d’idées contre les injustices. Avec des bouts de ficelle, elle accroche l’attention d’un groupe, stimule réflexion et créativité, démêle la complexité du monde. Avec elle, la justice tire toujours son épingle du jeu. Que tu aimes te déguiser pour faire passer des idées, débattre avec un groupe d’adolescent.e.s, créer des jeux malins et les contacts humains, participer à des initiatives de transition, il y a mille et une façons d’agir avec Oxfam-Magasins du monde, viens les découvrir sur"
-		},
-		"GIU": {
-			"title": "Giuseppe le RP - Relations publiques ",
-			"text": "Giuseppe est doué pour les débats d’idée. Parce qu’il est toujours le premier pour communiquer et informer, il les transforme en véritables succès. Organiser des événements et rencontrer des tas de gens sont deux de ses activités préférées.  Que tu aimes le cinéma, les conférences-débats, ou encore créer des partenariats, gérer la com’ d’un événement, convaincre des passant.e.s de devenir des militant.e.s, il y a mille et une façons d’agir avec Oxfam-Magasins du monde, viens les découvrir sur"
-		},
-		"CLE": {
-			"title": "Clément le militant",
-			"text": "Clément lutte activement contre le modèle économique dominant. Il a de nombreux engagements : migrants, environnement, paix et désarmement. Il fait donc de la politique autrement. Il aime aussi bricoler des trucs déments pour attirer l’attention des gens. Que tu aimes les festivals alternatifs, lutter pour une agriculture paysanne, donner un coup de main pour sensibiliser au seconde main, créer des projets pour plus d’équité, il y a mille et une façons d’agir avec Oxfam-Magasins du monde, viens les découvrir sur"
-		},
-		"PHI": {
-			"title": "Philippe le roi de la fripe",
-			"text": "Philippe adore la mode : veste zip et oripeaux à gogo. Mais il anticipe pour que nos vêtements ne soient pas envoyés au casse-pipe. Customisation, réparation, il participe à la slowfashion. Philippe c’est également le genre de type qui s’émancipe au contact d’une équipe. Que tu aimes la déco, les fringues pour petits et grands, ou encore gérer un stock de vêtements de seconde main ou d’artisanat équitable, ranger, trier, faire des vitrines, il y a mille et une façons d’agir avec Oxfam-Magasins du monde, viens les découvrir sur"
-    },
-      "BEN": {
-			"title": "Bénédicte la web addict",
-			"text": "Bénédicte a l’esprit critique. Pour elle, Internet est un outil fantastique pour changer le monde au niveau politique et économique. Mais pas question qu’Apple, Google, Facebook, Amazon dictent leur loi : ce qu’elle revendique, c’est un monde juste et démocratique. Verdict : elle est authentique ! Que tu aimes relayer des infos et photos sur les réseaux sociaux, écrire des newsletters et e-mailings percutants, former d’autres gens à la communication web, il y a mille et une façons d’agir avec Oxfam-Magasins du monde, viens les découvrir sur"
-		}
-	}
+  "yes_protest" : "Super ! 😄",
+  "idk_protest" : "Bon, c’est vrai que le 2 décembre c’est encore loin 😉"
 }

@@ -4,40 +4,40 @@
 		"answers": [
 			{
 				"text": "1. 📢",
-				"payload": "CLE-ALI"
+				"payload": "0"
 			},
 			{
 				"text": "2. 🔢",
-				"payload": "GIU"
+				"payload": "1"
 			},
 			{
 				"text": "3. 💻",
-				"payload": "BEN"
+				"payload": "2"
 			},
 			{
 				"text": "4. 🏝️",
-				"payload": "BIL-LIS-PHI"
+				"payload": "3"
 			}
 		]
 	},
 	{
-		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-02.png",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-02.jpg",
 		"answers": [
 			{
 				"text": "1️⃣️️",
-				"payload": "ALI-CLE"
+				"payload": "0"
 			},
 			{
 				"text": "2️⃣",
-				"payload": "GIU-LIS"
+				"payload": "1"
 			},
 			{
 				"text": "3️⃣",
-				"payload": "BIL"
+				"payload": "2"
 			},
 			{
 				"text": "4️⃣",
-				"payload": "PHI-BEN"
+				"payload": "3"
 			}
 		]
 	},
@@ -46,61 +46,61 @@
 		"answers": [
 			{
 				"text": "1. 🙋🏻",
-				"payload": "BEN"
+				"payload": "0"
 			},
 			{
 				"text": "2. 🍸",
-				"payload": "LIS-BIL"
+				"payload": "1"
 			},
 			{
 				"text": "3. 🎵",
-				"payload": "GIU-CLE"
+				"payload": "2"
 			},
 			{
 				"text": "4. 🎩",
-				"payload": "PHI-ALI"
+				"payload": "3"
 			}
 		]
 	},
 	{
-		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-04.png",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-04.jpg",
 		"answers": [
 			{
 				"text": "1️⃣",
-				"payload": "CLE-BIL"
+				"payload": "0"
 			},
 			{
 				"text": "2️⃣",
-				"payload": "BEN-ALI-GIU"
+				"payload": "1"
 			},
 			{
 				"text": "3️⃣",
-				"payload": "LIS"
+				"payload": "2"
 			},
 			{
 				"text": "4️⃣",
-				"payload": "PHI"
+				"payload": "3"
 			}
 		]
 	},
 	{
-		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-05.png",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-05.jpg",
 		"answers": [
 			{
 				"text": "1️⃣",
-				"payload": "ALI-GIU"
+				"payload": "0"
 			},
 			{
 				"text": "2️⃣",
-				"payload": "CLE-PHI"
+				"payload": "1"
 			},
 			{
 				"text": "3️⃣",
-				"payload": "BIL-BEN"
+				"payload": "2"
 			},
 			{
 				"text": "4️⃣",
-				"payload": "LIS"
+				"payload": "3"
 			}
 		]
 	},
@@ -109,40 +109,40 @@
 		"answers": [
 			{
 				"text": "1. 🛀🏻",
-				"payload": "LIS-ALI"
+				"payload": "0"
 			},
 			{
 				"text": "2. 🚆",
-				"payload": "CLE"
+				"payload": "1"
 			},
 			{
 				"text": "3. 🛍️",
-				"payload": "BIL-PHI"
+				"payload": "2"
 			},
 			{
 				"text": "4. 🏖️",
-				"payload": "BEN-GIU"
+				"payload": "3"
 			}
 		]
 	},
 	{
-		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-07.png",
+		"question": "https://s3.eu-central-1.amazonaws.com/admented/oxfam_bot_test/question-07.jpg",
 		"answers": [
 			{
 				"text": "1️⃣",
-				"payload": "PHI-ALI"
+				"payload": "0"
 			},
 			{
 				"text": "2️⃣",
-				"payload": "BEN"
+				"payload": "1"
 			},
 			{
 				"text": "3️⃣",
-				"payload": "CLE-LIS"
+				"payload": "2"
 			},
 			{
 				"text": "4️⃣",
-				"payload": "GIU-BIL"
+				"payload": "3"
 			}
 		]
 	},
@@ -151,19 +151,19 @@
 		"answers": [
 			{
 				"text": "1. 🌎",
-				"payload": "ALI"
+				"payload": "0"
 			},
 			{
 				"text": "2. 👗",
-				"payload": "PHI-LIS"
+				"payload": "1"
 			},
 			{
 				"text": "3. 🏠",
-				"payload": "BEN-CLE"
+				"payload": "2"
 			},
 			{
 				"text": "4. 📺",
-				"payload": "BIL-GIU"
+				"payload": "3"
 			}
 		]
 	},
@@ -172,19 +172,19 @@
 		"answers": [
 			{
 				"text": "1. 📱",
-				"payload": "BEN-BIL"
+				"payload": "0"
 			},
 			{
 				"text": "2. 🎧",
-				"payload": "PHI-CLE"
+				"payload": "1"
 			},
 			{
 				"text": "3. 🎸",
-				"payload": "GIU-LIS"
+				"payload": "2"
 			},
 			{
 				"text": "4. 🐦",
-				"payload": "ALI"
+				"payload": "3"
 			}
 		]
 	}

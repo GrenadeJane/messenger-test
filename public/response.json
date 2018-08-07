@@ -1,0 +1,104 @@
+[
+  [ 
+    {
+      "response": {
+        "attachment" :{
+        "type":"template",
+        "payload":{
+          "template_type":"button",
+          "text":"Pour info, le 2 décembre, à Bruxelles, grande manifestation organisée par le mouvement climatique ! Tu y seras ?",
+          "buttons":[
+            {
+              "type":"postback",
+              "title":"Oui !",
+              "payload":"yes_protest"
+            }, 
+            {
+              "type":"postback",
+              "title":"Je ne sais pas encore",
+              "payload":"idk_protest"
+            }
+          ]
+	      }
+      }
+    }, "profils": ["CLE", "ALI"]},
+    { 
+      "response": { 
+        "attachment": { 
+        "type":"template",
+        "payload":{
+          "template_type":"button",
+          "text":"Pour info, le 2 décembre, à Bruxelles, grande manifestation organisée par le mouvement climatique ! Tu y seras ?",
+          "buttons":[
+              {
+            "type":"postback",
+            "title":"Oui !",
+            "payload":"yes_protest"
+          }, 
+          {
+            "type":"postback",
+            "title":"Je ne sais pas encore",
+            "payload":"idk_protest"
+          }
+	      ]
+	    }
+    }
+  },
+     "profils": "GIU"},
+    { "response": {"text" : "#so-so-so-solidarité ! \n Pour nous suivre @oxfam_mdm"},"profils": "BEN"},
+    { "response": {"text" : "D’accord ! 😉"},"profils": ["BIL","LIS","PHI"]}
+  ],
+  {
+    "master_response" : [
+      {"text" : "Ces photos me donnent faim ! 😋 Et toi ?"}, 
+      {"text" : "Ça me fait penser que je dois aller chercher mon panier à mon GASAP. Bref, allez on continue !"}
+    ],
+      "0" :{ "profils": ["ALI","CLE"]},
+      "1" : { "profils": ["GIU","LIS"]},
+      "2" : { "profils": "BIL"},
+      "3" : { "profils": ["PHI","BEN"]}
+  }
+  ,
+  [
+    { "response": "1. 🙋🏻","profils": "BEN"},
+    { "response": "2. 🍸","profils": "LIS-BIL"},
+    { "response": "3. 🎵","profils": "GIU-CLE"},
+    { "response": "4. 🎩","profils": "PHI-ALI"}
+  ],
+	[
+    { "response": "1️⃣","profils": "CLE-BIL"},
+    { "response": "2️⃣","profils": "BEN-ALI-GIU"},
+    { "response": "3️⃣","profils": "LIS"},
+    { "response": "4️⃣","profils": "PHI"}
+  ],
+	[
+    { "response": "1️⃣","profils": "ALI-GIU"},
+    { "response": "2️⃣","profils": "CLE-PHI"},
+    { "response": "3️⃣","profils": "BIL-BEN"},
+    { "response": "4️⃣","profils": "LIS"}
+  ],
+	[
+    { "response": "1. 🛀🏻","profils": "LIS-ALI"},
+    { "response": "2. 🚆","profils": "CLE"},
+    { "response": "3. 🛍️","profils": "BIL-PHI"},
+    { "response": "4. 🏖️","profils": "BEN-GIU"}
+  ],
+  [
+    { "response": "1️⃣","profils": "PHI-ALI"},
+    { "response": "2️⃣","profils": "BEN"},
+    { "response": "3️⃣","profils": "CLE-LIS"},
+    { "response": "4️⃣","profils": "GIU-BIL"}
+  ],
+  [
+    { "response": "1. 🌎","profils": "ALI"},
+    { "response": "2. 👗","profils": "PHI-LIS"},
+    { "response": "3. 🏠","profils": "BEN-CLE"},
+    { "response": "4. 📺","profils": "BIL-GIU"}
+  ],
+	[
+    { "response": "1. 📱","profils": "BEN-BIL"},
+    { "response": "2. 🎧","profils": "PHI-CLE"},
+    { "response": "3. 🎸","profils": "GIU-LIS"},
+    { "response": "4. 🐦","profils": "ALI"}
+  ]
+]

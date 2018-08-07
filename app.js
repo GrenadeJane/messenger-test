@@ -12,12 +12,16 @@ const PQueue = require('p-queue');
 const mongoOxfam = require("./routes/mongoose");
 const dataJSON = require('./public/quiz.json');
 const chatJSON = require('./public/chat.json');
+const resultsJSON = require('./public/results.json');
 const emojiJSON = require("emoji-datasource-messenger/emoji.json");
 const testemoji = require("emoji-data");
-
+const responseJSON = require("./public/response.json");
 const zero = testemoji.from_unified("0030-FE0F-20E3");
 const est = testemoji.find_by_short_name(":zero:");//app); 
 // :: Dependencies in the personal code
+
+// wait fo the answer for the response of payload 
+// answerToPayload()
 
 app.set('view engine', 'pug');
 app.set('views', './views');
@@ -40,27 +44,8 @@ app.get('/dynamic-webview', (req, res) => {
   let {result} = req.query;
   result = (result ) ? result : "BEN";
   console.log(result);
-  res.render('template', chatJSON.profils[result]);
+  res.render('template', resultsJSON[result]);
 });
-
-function getRandomInt(max) {
-  return Math.floor(Math.random() * Math.floor(max));
-}
-
-async function getRandomSentence(sender_psid) {
-  if ( getRandomInt(4) <= 1 ){
-    const num = getRandomInt(chatJSON.random.length - 1);
-    sendTypingOn(sender_psid);
-    await sleep(3000);
-    sendTypingOff(sender_psid);
-    
-    let response = { "text": chatJSON.random[num] };
-
-    callSendAPI(sender_psid, response);
-  }
-  else 
-    return null;
-}
 
 function sleep(ms){
   return new Promise(resolve=>{
@@ -68,20 +53,63 @@ function sleep(ms){
   });
 }
 
+async function sendMultipleResponse(user) {
+  if ( user.waitingResponseCount < responseJSON[user.waitingResponseCount].master_response.length) {
+    await sendTextAnswer(user.PSID, responseJSON[user.awaitingResponseCount].master_response[user.waitingResponseCount]);
+    user.waitingResponseCount++;
+    return await user.save();
+  }
+  else {
+    user.waitForUserResponse = false;
+    await incrementCount(user);
+    await user.save();
+    handleMessageQuiz(user.PSID);
+  }
+}
+
+async function answerToPayload(user, questionIndex, payloadIndex ) {
+  const responsePayload = responseJSON[questionIndex];
+  // one response for all the payload
+  if ( responsePayload.master_response ) 
+  {
+    // if there is more than one sentence, wait that the user answer between them
+    if ( responsePayload.master_response.length > 0 ) 
+      await changeWaitStatusUser(user.PSID, true);
+    // bot send text answer 
+    await sendMultipleResponse(user);
+     //sendTextAnswer(user, responsePayload.master_response[0]);
+  } else {
+    if ( responsePayload[payloadIndex].response.attachment )
+      await changeWaitStatusUser(user.PSID, true);
+      
+     await sendTextAnswer(user.PSID, responsePayload[payloadIndex].response);
+  }
+  return user.waitForUserResponse;
+}
+
+async function changeWaitStatusUser(psid, state){
+   let user = await mongoOxfam.findOneAndUpdate ({"PSID" : psid }, { $set : { "waitForUserResponse" : state } });
+   await user.save();
+}
+
 async function handleMessageQuiz(psid, webhookMessage) {
   await sleep(3000);
   let user = await mongoOxfam.findOne({ "PSID": psid });
+  let anwsered_count = user ? (user.answered.count > 0 ? user.answered.count : 0 ) : 0;
+   let waitForResponse;
   let response;
   if (!user)
     user = await createUser(psid);
   else if ( webhookMessage && webhookMessage.quick_reply ) {
-    user = await saveResult(user, webhookMessage.quick_reply.payload);
-    await sleep (3000);
-    await getRandomSentence(psid);
+    let profils = responseJSON[anwsered_count][webhookMessage.quick_reply.payload].profils; 
     await sleep(3000);
+    const waitForResponse = await answerToPayload(user, anwsered_count, webhookMessage.quick_reply.payload);
+    if ( !waitForResponse )
+      anwsered_count = await incrementCount(user);
+    
+    user = await saveResult(user, profils);
   }
   
-  const anwsered_count = user.answered.count;
   if (anwsered_count == dataJSON.length) {
     const profil = getProfil(user);
     return createWebviewResult(profil);
@@ -92,9 +120,11 @@ async function handleMessageQuiz(psid, webhookMessage) {
   }
 
   const content = dataJSON[anwsered_count];
-  response = createQuickReplies(content);
-
-  return response;
+  if ( !waitForResponse  ){
+    response = createQuickReplies(content);
+    callSendAPI(psid, response);
+    sendTypingOff(psid);
+  }
 }
 
 async function createUser(psid) {
@@ -107,13 +137,12 @@ async function createUser(psid) {
 
 async function incrementCount(user) {
   user.answered.count++;
-  return await user.save();
+  await user.save();
+  return user.answered.count;
 }
 
-async function saveResult(user, payload) {
-  const arrayName = payload.split("-");
-  user = await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": arrayName } });
-  return await incrementCount(user);
+async function saveResult(user, profils) {
+   await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": profils } });
 }
 
 function getProfil(user) {
@@ -165,13 +194,13 @@ app.post('/webhook', async (req, res) => {
   const body = req.body;
   if (body.object === 'page') {
 
-    body.entry.forEach(entry => {
+    await body.entry.forEach(async (entry) =>  {
 
    
       // Gets the body of the webhook event
       const webhook_event = entry.messaging[0];
       const  sender_psid = webhook_event.sender.id;
-  
+      const user = await mongoOxfam.findOne({"PSID" : sender_psid});
      webhookDebug(webhook_event);
 
       // Get the sender PSID
@@ -187,8 +216,6 @@ app.post('/webhook', async (req, res) => {
           sendTypingOn(sender_psid);
           
           handleMessageQuiz(sender_psid, webhook_event.message)
-          .then(result => callSendAPI(sender_psid, result))
-          .then(() => sendTypingOff(sender_psid))
           .catch(err => console.log("error during the handle of the message quiz "));
         } 
         else if (webhook_event.message.text) {
@@ -197,6 +224,8 @@ app.post('/webhook', async (req, res) => {
           startQuiz(sender_psid, webhook_event.message);
          else if (/recommencer/.test(webhook_event.message.text.toLowerCase()))
             restartQuiz(sender_psid);
+        else if ( user.waitForUserResponse ) 
+          sendMultipleResponse(user);
         else 
           waitReadyState(sender_psid);
         }
@@ -231,22 +260,17 @@ app.get('/webhook', (req, res) => {
   }
 });
 
+async function sendTextAnswer( sender_psid, response ) {
+  sendTypingOn(sender_psid);
+  await sleep(2000);
+  sendTypingOff(sender_psid);
+
+  callSendAPI(sender_psid, response);
+}
+
 async function waitReadyState(sender_psid ) {
-  let response = {"text": chatJSON.stop };
-  
-  sendTypingOn(sender_psid);
-  await sleep(2000);
-  sendTypingOff(sender_psid);
-
-  callSendAPI(sender_psid, response);
-  
-  response = {"attachment": chatJSON.wait };
-  
-  sendTypingOn(sender_psid);
-  await sleep(2000);
-  sendTypingOff(sender_psid);
-
-  callSendAPI(sender_psid, response);
+  await sendTextAnswer(sender_psid, {"text": chatJSON.stop });
+  await sendTextAnswer(sender_psid, {"attachment": chatJSON.wait });
 }
 
 function createWebviewResult ( profil ) {
@@ -258,7 +282,7 @@ function createWebviewResult ( profil ) {
         "elements":[
            {
             "title":"Voici ton résultat !",
-         //   "image_url":"https://petersfancybrownhats.com/company_image.png",
+           "image_url":"https://petersfancybrownhats.com/company_image.png",
             "subtitle":"Clique sur ce lien pour savoir quel cousin Oxfam tu es !",
             "default_action": {
               "type": "web_url",
@@ -314,51 +338,41 @@ function handlePostback(sender_psid, webhook_event) {
     startConversation(sender_psid);
   else if ( payload == "wait" ) 
     pauseConversation(sender_psid);
+  else 
+    responseAndContinueQuiz(sender_psid, payload );
+ /* else if ( payload == "yes_protest" ) 
+    sendTextAnswer(sender_psid, { "text": chatJSON.yes_protest });
+    else if (payload == "no_protest")
+    sendTextAnswer(sender_psid, { "text": chatJSON.no_protest });*/
+      
+}
+
+function responseAndContinueQuiz(sender_psid, payload)
+{
+    changeWaitStatusUser(sender_psid,false);
+    sendTextAnswer(sender_psid, { "text": chatJSON[payload] });
+    handleMessageQuiz(sender_psid);
 }
 
 async function pauseConversation (sender_psid ) {
-  let response = { "attachment": chatJSON.wait };
-  callSendAPI(sender_psid, response);
-
-  sendTypingOn(sender_psid);
-  await sleep(2000);
-  sendTypingOff(sender_psid);
+  await sendTextAnswer(sender_psid, { "attachment": chatJSON.wait });
 }
   
 async function startConversation(sender_psid) {
-  let response = { "text": chatJSON.greetings };
-  callSendAPI(sender_psid, response);
-
-  sendTypingOn(sender_psid);
-  await sleep(2000);
-  sendTypingOff(sender_psid);
-
-  response = {"attachment": chatJSON.reset };
-  callSendAPI(sender_psid, response);
-
-  sendTypingOn(sender_psid);
-  await sleep(2000);
-  sendTypingOff(sender_psid);
-
-  response = { "attachment": chatJSON.start };
-  callSendAPI(sender_psid, response);
+  await sendTextAnswer(sender_psid, { "text": chatJSON.greetings });
+  await sendTextAnswer(sender_psid, { "attachment": chatJSON.reset });
+  await sendTextAnswer(sender_psid, { "attachment": chatJSON.start });
 }
 
 async function startQuiz(sender_psid, message = null) {
-  let response = { "text": chatJSON.letsgo };
-  callSendAPI(sender_psid, response);
-
-  sendTypingOn(sender_psid);
-  await sleep(1000);
-  sendTypingOff(sender_psid);
-
-  handleMessageQuiz(sender_psid, message)
-  .then(result => callSendAPI(sender_psid, result));
+  await sendTextAnswer(sender_psid, { "text": chatJSON.letsgo });
+  
+  handleMessageQuiz(sender_psid, message);
 }
 
 function restartQuiz(sender_psid) {
   mongoOxfam
-    .findOneAndUpdate ({"PSID" : sender_psid }, { $set: { "answered.count": 0 , "result" : [] } })
+    .findOneAndUpdate ({"PSID" : sender_psid }, { $set: { "answered.count": 0 , "result" : [], "waitForUserResponse" : false } })
     .then(() => startQuiz(sender_psid))
     .catch(err => console.log("error during the restart of the quizz "));
 }
