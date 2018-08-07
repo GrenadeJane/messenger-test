@@ -12,12 +12,19 @@ const PQueue = require('p-queue');
 const mongoOxfam = require("./routes/mongoose");
 const dataJSON = require('./public/quiz.json');
 const chatJSON = require('./public/chat.json');
+const resultsJSON = require('./public/results.json');
 const emojiJSON = require("emoji-datasource-messenger/emoji.json");
 const testemoji = require("emoji-data");
-
+const responseJSON = require("./public/response.json");
 const zero = testemoji.from_unified("0030-FE0F-20E3");
 const est = testemoji.find_by_short_name(":zero:");//app); 
 // :: Dependencies in the personal code
+
+// wait fo the answer for the response of payload 
+// answerToPayload()
+
+app.set('view engine', 'pug');
+app.set('views', './views');
 
 app.use(logger('dev', 'tiny'));
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -33,42 +40,91 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
+app.get('/dynamic-webview', (req, res) => {
+  let {result} = req.query;
+  result = (result ) ? result : "BEN";
+  console.log(result);
+  res.render('template', resultsJSON[result]);
+});
+
 function sleep(ms){
   return new Promise(resolve=>{
       setTimeout(resolve,ms)
   });
 }
 
-async function handleMessageQuiz(psid, webhookMessage) {
+async function sendMultipleResponse(user) {
+  if ( user.waitingResponseCount < responseJSON[user.waitingResponseCount].master_response.length) {
+    await sendTextAnswer(user.PSID, responseJSON[user.awaitingResponseCount].master_response[user.waitingResponseCount]);
+    user.waitingResponseCount++;
+    return await user.save();
+  }
+  else {
+    user.waitForUserResponse = false;
+    await incrementCount(user);
+    await user.save();
+    handleMessageQuiz(user.PSID);
+  }
+}
 
-  const quick_reply = (webhookMessage) ? webhookMessage.quick_reply : null;
+async function answerToPayload(user, questionIndex, payloadIndex ) {
+  const responsePayload = responseJSON[questionIndex];
+  // one response for all the payload
+  if ( responsePayload.master_response ) 
+  {
+    // if there is more than one sentence, wait that the user answer between them
+    if ( responsePayload.master_response.length > 0 ) 
+      await changeWaitStatusUser(user.PSID, true);
+    // bot send text answer 
+    await sendMultipleResponse(user);
+     //sendTextAnswer(user, responsePayload.master_response[0]);
+  } else {
+    if ( responsePayload[payloadIndex].response.attachment )
+      await changeWaitStatusUser(user.PSID, true);
+      
+     await sendTextAnswer(user.PSID, responsePayload[payloadIndex].response);
+  }
+  return user.waitForUserResponse;
+}
+
+async function changeWaitStatusUser(psid, state){
+   let user = await mongoOxfam.findOneAndUpdate ({"PSID" : psid }, { $set : { "waitForUserResponse" : state } });
+   await user.save();
+}
+
+async function handleMessageQuiz(psid, webhookMessage) {
+  await sleep(3000);
   let user = await mongoOxfam.findOne({ "PSID": psid });
+  let anwsered_count = user ? (user.answered.count > 0 ? user.answered.count : 0 ) : 0;
+   let waitForResponse;
   let response;
   if (!user)
     user = await createUser(psid);
-
-  if (quick_reply) {
-    user = await saveResult(user, quick_reply.payload);
+  else if ( webhookMessage && webhookMessage.quick_reply ) {
+    let profils = responseJSON[anwsered_count][webhookMessage.quick_reply.payload].profils; 
+    await sleep(3000);
+    const waitForResponse = await answerToPayload(user, anwsered_count, webhookMessage.quick_reply.payload);
+    if ( !waitForResponse )
+      anwsered_count = await incrementCount(user);
+    
+    user = await saveResult(user, profils);
   }
-
-  const anwsered_count = user.answered.count;
+  
   if (anwsered_count == dataJSON.length) {
     const profil = getProfil(user);
-    return response = {
-      "text": "Congrats ! Ton profil benevole est :  " + chatJSON.profils[profil].text
-    }
+    return createWebviewResult(profil);
   }
   else if (anwsered_count < 0 || anwsered_count > dataJSON.length) {
     user.answered.count = 0;
     await user.save();
-    //res.status(400).send({ message: "error of database, please retry " });
   }
 
   const content = dataJSON[anwsered_count];
-  response = createQuickReplies(content);
-
-  return response;
-  // res.status(200).send({ content: content, profil: profil, response : response });
+  if ( !waitForResponse  ){
+    response = createQuickReplies(content);
+    callSendAPI(psid, response);
+    sendTypingOff(psid);
+  }
 }
 
 async function createUser(psid) {
@@ -81,13 +137,12 @@ async function createUser(psid) {
 
 async function incrementCount(user) {
   user.answered.count++;
-  return await user.save();
+  await user.save();
+  return user.answered.count;
 }
 
-async function saveResult(user, payload) {
-  const arrayName = payload.split("-");
-  user = await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": arrayName } });
-  return await incrementCount(user);
+async function saveResult(user, profils) {
+   await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": profils } });
 }
 
 function getProfil(user) {
@@ -134,46 +189,53 @@ async function sendMarkSeen(sender_psid ) {
   sendAction(sender_psid, "mark_seen");
 }
 
-function test(sender_psid, message) {
-  handleMessageQuiz(sender_psid, message).then(result => callSendAPI(sender_psid, result))
-}
 
-app.post('/webhook', (req, res) => {
+app.post('/webhook', async (req, res) => {
   const body = req.body;
   if (body.object === 'page') {
 
-    body.entry.forEach(entry => {
+    await body.entry.forEach(async (entry) =>  {
 
+   
       // Gets the body of the webhook event
       const webhook_event = entry.messaging[0];
       const  sender_psid = webhook_event.sender.id;
-      webhookDebug(webhook_event);
+      const user = await mongoOxfam.findOne({"PSID" : sender_psid});
+     webhookDebug(webhook_event);
 
       // Get the sender PSID
       webhookDebug('Sender PSID: ' + sender_psid);
       sendMarkSeen(sender_psid);
+        console.dir('webhook event' + webhook_event);
 
       // Check if the event is a message or postback and
       // pass the event to the appropriate handler function
       if (webhook_event.message) {
-        if ( webhook_event.message === "recommencer") {
-          restartQuiz(sender_psid);
-          continue;
+       
+        if ( webhook_event.message.quick_reply ) {
+          sendTypingOn(sender_psid);
+          
+          handleMessageQuiz(sender_psid, webhook_event.message)
+          .catch(err => console.log("error during the handle of the message quiz "));
+        } 
+        else if (webhook_event.message.text) {
+          console.log("message : " + webhook_event.message.text);
+         if (/continuer/.test(webhook_event.message.text.toLowerCase()))
+          startQuiz(sender_psid, webhook_event.message);
+         else if (/recommencer/.test(webhook_event.message.text.toLowerCase()))
+            restartQuiz(sender_psid);
+        else if ( user.waitForUserResponse ) 
+          sendMultipleResponse(user);
+        else 
+          waitReadyState(sender_psid);
         }
         
-        sendTypingOn(sender_psid);
-        
-        handleMessageQuiz(sender_psid, webhook_event.message)
-        .then(result => callSendAPI(sender_psid, result))
-        .then(() => sendTypingOff(sender_psid))
-        .catch(err => console.log("error during the handle of the message quiz "));
-    
       } else if (webhook_event.postback) {
         // :: only if restart of start quizz 
         handlePostback(sender_psid, webhook_event);
       }
     });
-
+  
     res.status(200).send('EVENT_RECEIVED');
 
   } else {
@@ -197,6 +259,44 @@ app.get('/webhook', (req, res) => {
     }
   }
 });
+
+async function sendTextAnswer( sender_psid, response ) {
+  sendTypingOn(sender_psid);
+  await sleep(2000);
+  sendTypingOff(sender_psid);
+
+  callSendAPI(sender_psid, response);
+}
+
+async function waitReadyState(sender_psid ) {
+  await sendTextAnswer(sender_psid, {"text": chatJSON.stop });
+  await sendTextAnswer(sender_psid, {"attachment": chatJSON.wait });
+}
+
+function createWebviewResult ( profil ) {
+    return {
+      "attachment":{
+      "type":"template",
+      "payload":{
+        "template_type":"generic",
+        "elements":[
+           {
+            "title":"Voici ton résultat !",
+           "image_url":"https://petersfancybrownhats.com/company_image.png",
+            "subtitle":"Clique sur ce lien pour savoir quel cousin Oxfam tu es !",
+            "default_action": {
+              "type": "web_url",
+              "url": "https://bubble-message.glitch.me/dynamic-webview?result="+ profil,
+              "messenger_extensions": true,
+              "webview_height_ratio": "tall",
+              "fallback_url": "https://bubble-message.glitch.me/dynamic-webview?result="+ profil
+            }  
+          }
+        ]
+      }
+    }
+   }
+}
 
 function createQuickReplies(question) {
   let quick_replies = [];
@@ -225,52 +325,54 @@ function createQuickReplies(question) {
 
 // Handles messaging_postbacks events
 function handlePostback(sender_psid, webhook_event) {
+
   // Get the payload for the postback
   let payload = webhook_event.postback.payload;
 
   // start quiz with the start button
-  if (payload == "start_quiz")
+  if (payload == "start_quiz" || payload == "resume" )
     startQuiz(sender_psid, webhook_event.message);
   else if (payload == "reset_quiz")
     restartQuiz(sender_psid);
   else if ( payload == "start_conversation")
     startConversation(sender_psid);
+  else if ( payload == "wait" ) 
+    pauseConversation(sender_psid);
+  else 
+    responseAndContinueQuiz(sender_psid, payload );
+ /* else if ( payload == "yes_protest" ) 
+    sendTextAnswer(sender_psid, { "text": chatJSON.yes_protest });
+    else if (payload == "no_protest")
+    sendTextAnswer(sender_psid, { "text": chatJSON.no_protest });*/
+      
 }
 
+function responseAndContinueQuiz(sender_psid, payload)
+{
+    changeWaitStatusUser(sender_psid,false);
+    sendTextAnswer(sender_psid, { "text": chatJSON[payload] });
+    handleMessageQuiz(sender_psid);
+}
+
+async function pauseConversation (sender_psid ) {
+  await sendTextAnswer(sender_psid, { "attachment": chatJSON.wait });
+}
+  
 async function startConversation(sender_psid) {
-  let response = { "text": chatJSON.greetings };
-  callSendAPI(sender_psid, response);
-
-  sendTypingOn(sender_psid);
-  await sleep(2000);
-  sendTypingOff(sender_psid);
-
-  let response = {"attachment": chatJSON.reset };
-  callSendAPI(sender_psid, response);
-
-  sendTypingOn(sender_psid);
-  await sleep(1000);
-  sendTypingOff(sender_psid);
-
-  let response = { "text": chatJSON.letsgo };
-  callSendAPI(sender_psid, response);
+  await sendTextAnswer(sender_psid, { "text": chatJSON.greetings });
+  await sendTextAnswer(sender_psid, { "attachment": chatJSON.reset });
+  await sendTextAnswer(sender_psid, { "attachment": chatJSON.start });
 }
 
-function startQuiz(sender_psid, message = null) {
-  let response = { "text": chatJSON.letsgo };
-  callSendAPI(sender_psid, response);
-
-  sendTypingOn(sender_psid);
-  await sleep(1000);
-  sendTypingOff(sender_psid);
-
-  handleMessageQuiz(sender_psid, message)
-  .then(result => callSendAPI(sender_psid, result));
+async function startQuiz(sender_psid, message = null) {
+  await sendTextAnswer(sender_psid, { "text": chatJSON.letsgo });
+  
+  handleMessageQuiz(sender_psid, message);
 }
 
 function restartQuiz(sender_psid) {
   mongoOxfam
-    .findByIdAndUpdate(sender_psid, { $set: { "answered.count": 0 } })
+    .findOneAndUpdate ({"PSID" : sender_psid }, { $set: { "answered.count": 0 , "result" : [], "waitForUserResponse" : false } })
     .then(() => startQuiz(sender_psid))
     .catch(err => console.log("error during the restart of the quizz "));
 }
@@ -284,8 +386,8 @@ function callSendAPIDirect(response) {
     "json": response
   }, (err, res, body) => {
     if (!err) {
-      console.log('message sent!')
-      console.dir(response);
+      //console.log('message sent!')
+      //console.dir(response);
     } else {
       console.error("Unable to send message:" + err);
     }

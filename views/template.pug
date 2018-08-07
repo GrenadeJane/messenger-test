@@ -1,0 +1,39 @@
+doctype html 
+
+link(rel="stylesheet", href="/stylesheets/main.css")
+
+head 
+  title Résultat !
+body 
+  script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js")
+  script.
+    (function(d, s, id){
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/messenger.Extensions.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'Messenger'));
+    window.extAsyncInit = function() {
+        var isSupported = MessengerExtensions.isInExtension();
+        MessengerExtensions.getUserID(function success(uids) {
+            var psid = uids.psid;//This is your page scoped sender_id
+           $.post('https://bubble-message.glitch.me/dynamic-webview', {"psid": psid})
+        }, function error(err) {
+         MessengerExtensions.getContext('2141837256139694', 
+          function success(result){
+             $.post('https://bubble-message.glitch.me/dynamic-webview', {"psid": result.psid});
+          },
+          function error(result){
+            console.log("Error" + result);
+          }
+        );
+       });
+      // the Messenger Extensions JS SDK is done loading 
+    };
+  div.header 
+    img(src="https://cdn.glitch.com/7cba3431-8634-4de0-bbf2-48792c90b307%2FLogo_App.png" )
+    h1 #{title}
+  img.imgAnswer(src="https://cdn.glitch.com/7cba3431-8634-4de0-bbf2-48792c90b307%2Fphoto_test.jpg", title=title)
+  p.answer #{text} 
+    <a target="_blank" rel="noopener noreferrer" href="https://www.omdm.be/agir">www.omdm.be/agir</a>

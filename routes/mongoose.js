@@ -10,12 +10,6 @@ mongoose.connect(uri,  { useNewUrlParser: true } )
 const Thread_Data = mongoose.model('thread_datas', new mongoose.Schema({
 		PSID : String,
 		answered : {
-       status : {
-         type : String, 
-         enum : ['completed', 'wip', 'not started'],
-         lowercase : true,
-         default : 'not started'
-       }, 
       count : {
         type : Number,
         set: v => Math.round(v),
@@ -28,6 +22,15 @@ const Thread_Data = mongoose.model('thread_datas', new mongoose.Schema({
       type : Array(String), 
       enum : ['CLE', 'ALI', 'GIU', 'BEN', 'BIL', 'LIS', 'PHI'],
       uppercase : true
+    },
+    waitForUserResponse : {
+      type : Boolean,
+      default : false
+    },
+    waitingResponseCount : {
+      type : Number,
+      min : 0,
+      default :0
     }
 	})
 	.index({ PSID: 1}, { unique: true }));
