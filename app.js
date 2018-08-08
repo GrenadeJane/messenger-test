@@ -43,7 +43,7 @@ app.use(function (err, req, res, next) {
 app.get('/dynamic-webview', (req, res) => {
   let {result} = req.query;
   result = (result ) ? result : "BEN";
-  console.log(result);
+  console.dir(resultsJSON[result]);
   res.render('template', resultsJSON[result]);
 });
 
@@ -123,7 +123,7 @@ async function handleMessageQuiz(psid, webhookMessage) {
   // the quiz is finished ?
   if (IsLastQuestion(anwsered_count)) {
     const profil = getProfil(user);
-    return createWebviewResult(profil);
+    callSendAPI(psid,  createWebviewResult(profil));
   }
 
   // create response with quick replies
@@ -238,6 +238,11 @@ app.post('/webhook', async (req, res) => {
           startQuiz(sender_psid, webhook_event.message);
          else if (/recommencer/.test(webhook_event.message.text.toLowerCase()))
             restartQuiz(sender_psid);
+          else if ("results" == webhook_event.message.text){
+                const profil = getProfil(user);
+            callSendAPI(sender_psid,  createWebviewResult(profil));
+          }
+      
         else if ( user.waitForUserResponse ) 
           sendMultipleResponse(user);
         else 
@@ -295,9 +300,9 @@ function createWebviewResult ( profil ) {
         "template_type":"generic",
         "elements":[
            {
-            "title":"Voici ton résultat !",
-           "image_url":"https://petersfancybrownhats.com/company_image.png",
-            "subtitle":"Clique sur ce lien pour savoir quel cousin Oxfam tu es !",
+            "title":"Découvre ton résultat !",
+           "image_url": resultsJSON[profil].image,
+            "subtitle":resultsJSON[profil].title,
             "default_action": {
               "type": "web_url",
               "url": "https://bubble-message.glitch.me/dynamic-webview?result="+ profil,
