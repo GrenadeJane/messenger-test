@@ -14,8 +14,6 @@ const dataJSON = require('./public/quiz.json');
 const chatJSON = require('./public/chat.json');
 const resultsJSON = require('./public/results.json');
 const responseJSON = require("./public/response.json");
-const zero = testemoji.from_unified("0030-FE0F-20E3");
-const est = testemoji.find_by_short_name(":zero:");//app); 
 // :: Dependencies in the personal code
 
 
@@ -382,7 +380,6 @@ app.get('/dynamic-webview', (req, res) => {
 
 app.get('/webhook', (req, res) => {
   let VERIFY_TOKEN = process.env.PAGE_ACCESS_TOKEN;
-console.log(VERIFY_TOKEN);
   let mode = req.query['hub.mode'];
   let token = req.query['hub.verify_token'];
   let challenge = req.query['hub.challenge'];
