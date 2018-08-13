@@ -391,10 +391,9 @@ app.get('/webhook', (req, res) => {
       webhookDebug('WEBHOOK_VERIFIED');
       res.status(200).send(challenge);
     } else {
-      res.status(404).send("page process" + VERIFY_TOKEN);
+      res.status(404);
     }
-  } else 
-    res.status(404).send("verify token" + VERIFY_TOKEN);
+  } 
 });
 
 
