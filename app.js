@@ -389,7 +389,7 @@ app.get('/webhook', (req, res) => {
       webhookDebug('WEBHOOK_VERIFIED');
       res.status(200).send(challenge);
     } else {
-      res.sendStatus(404);
+      res.status(404).message("page process" + PAGE_ACCESS_TOKEN);
     }
   }
 });
