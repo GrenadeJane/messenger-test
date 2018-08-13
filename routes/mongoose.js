@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 
 let uri;
 // uri = 'mongodb://lea:oxfam-lea-1@ds143971.mlab.com:43971/oxfam-test';
-uri='mongodb://localhost:27017/oxfam';
+uri=process.env.MONGO_URL;
 mongoose.connect(uri,  { useNewUrlParser: true } )
 	.then(() => console.log('Connected to MongoDB ... '))
 	.catch(err => console.log('Could not connect to MongoDB ...', err));

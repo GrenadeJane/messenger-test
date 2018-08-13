@@ -2,13 +2,6 @@ dependencies:
   body-parser: 1.18.3
   debug: 3.1.0
   dotenv: 6.0.0
-  emoji-data: 0.2.0
-  emoji-datasource: 4.1.0
-  emoji-datasource-apple: 4.1.0
-  emoji-datasource-facebook: 4.1.0
-  emoji-datasource-google: 4.1.0
-  emoji-datasource-messenger: 4.1.0
-  emoji-datasource-twitter: 4.1.0
   express: 4.16.3
   mongoose: 5.2.6
   morgan: 1.9.0
@@ -588,39 +581,6 @@ packages:
     dev: false
     resolution:
       integrity: sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
-  /emoji-data/0.2.0:
-    dependencies:
-      underscore.string: 2.4.0
-    dev: false
-    engines:
-      node: '>=0.10.0'
-      npm: '>=1.2.10'
-    resolution:
-      integrity: sha1-pGxmC5ExPoZuvJkAmI6ztktGh+g=
-  /emoji-datasource-apple/4.1.0:
-    dev: false
-    resolution:
-      integrity: sha1-5nJTEbEVFEoy+2AENBanVf6jC/U=
-  /emoji-datasource-facebook/4.1.0:
-    dev: false
-    resolution:
-      integrity: sha1-NmPQnLTzzEXm0Lk0AeTAAlXk2V4=
-  /emoji-datasource-google/4.1.0:
-    dev: false
-    resolution:
-      integrity: sha1-1pvnTUjHbuK7n8tOeSDyf6Et3p4=
-  /emoji-datasource-messenger/4.1.0:
-    dev: false
-    resolution:
-      integrity: sha1-q0hgJzf3iwcoxcPmNt4tXzLXREs=
-  /emoji-datasource-twitter/4.1.0:
-    dev: false
-    resolution:
-      integrity: sha1-43Sm7IfgcVYeR7B92wCzv0Mm0qI=
-  /emoji-datasource/4.1.0:
-    dev: false
-    resolution:
-      integrity: sha1-tEVX94ot+sLzUDkzkbFwpWfsKK0=
   /encodeurl/1.0.2:
     dev: false
     engines:
@@ -2108,10 +2068,6 @@ packages:
     optional: true
     resolution:
       integrity: sha1-bgkk1r2mta/jSeOabWMoUKD4grc=
-  /underscore.string/2.4.0:
-    dev: false
-    resolution:
-      integrity: sha1-jN2PusTi0uoefi6Al8QvRCKA+Fs=
   /unpipe/1.0.0:
     dev: false
     engines:
@@ -2223,13 +2179,6 @@ specifiers:
   body-parser: ^1.18.3
   debug: ^3.1.0
   dotenv: ^6.0.0
-  emoji-data: ^0.2.0
-  emoji-datasource: ^4.1.0
-  emoji-datasource-apple: ^4.1.0
-  emoji-datasource-facebook: ^4.1.0
-  emoji-datasource-google: ^4.1.0
-  emoji-datasource-messenger: ^4.1.0
-  emoji-datasource-twitter: ^4.1.0
   express: ^4.16.3
   mongoose: ^5.2.6
   morgan: ^1.9.0

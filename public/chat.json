@@ -1,6 +1,5 @@
 
 {
-  "random" : [ "blabla", "oyeah", "nope", "tes sur de toi la ? ", "perso, je n'aurai pas dit ca"],
 	"reset" : {
 			"type":"template",
 			"payload":{
@@ -19,7 +18,7 @@
 	"type":"template",
 	"payload":{
 	  "template_type":"button",
-	  "text":"Tu es prêt ?",
+	  "text":"Prêt.e ?",
 	  "buttons":[
 		{
 		  "type":"postback",
@@ -48,7 +47,7 @@
 	  ]
 	}
 },
-	"greetings": " Salut ! Je m’appelle Kenny, je fais partie de l’Oxfamily ! Ça te dit un petit test pour découvrir quel est ton profil de bénévole ? /n Prêt.e ?",
+	"greetings": " Salut ! Je m’appelle Kenny, je fais partie de l’Oxfamily ! Ça te dit un petit test pour découvrir quel est ton profil de bénévole ?",
   "ended" : "Le test est fini ! Merci d’avoir participé. Tu vas découvrir dans quelques secondes ton profil de bénévole. Quel sera ton style ? Ah, j’ai hâte de savoir ! \n N’hésite pas à aller voir tous les profils sur notre page www.omdm.be/agir et à partager ton profil avec tes ami.e.s !",
   "letsgo": "C’est parti !",
 	"stop": "Tu ne veux pas finir le quiz ? ",

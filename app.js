@@ -20,7 +20,7 @@ require('dotenv').config();
 
 
 // # utils region
-
+ 
 function sleep(ms) {
   return new Promise(resolve => {
     setTimeout(resolve, ms)
@@ -35,20 +35,27 @@ async function sendMultipleResponse(user) {
   // :: send the next response of the chain
   sendTextAnswer(user.PSID, responseJSON[user.answered.count].master_response[user.waitingResponseCount])
     .then(() => goToNextChainedQuestion(user))
+    .then((newCount) => {
+     // :: if this is the last response of the chain, continue to the chain, send the next quiz's question
+      if (newCount >= responseJSON[user.answered.count].master_response.length) {
+        continueQuizAfterUserResponse(user);
+      }
+    })
     .catch((err) => { console.log('error during the load of the next chained question ' + err); resetQuestionOptions(); });
+}
 
-  // :: if this is the last response of the chain, continue to the chain, send the next quiz's question
-  if (user.waitingResponseCount >= responseJSON[user.answered.count].master_response.length) {
-    resetQuestionOptions(user)
-      .then(resultUser => goToNextQuestion(resultUser))
-      .then(resultUser => handleMessageQuiz(resultUser.PSID))
-      .catch(err => console.log("error during the handle quiz after handle the chained question " + err));
-  }
+async function continueQuizAfterUserResponse(user)
+{
+  resetQuestionOptions(user)
+    .then(resultUser => goToNextQuestion(resultUser))
+    .then(resultUser => handleMessageQuiz(resultUser.PSID))
+    .catch(err => console.log("error during the handle quiz after handle the chained question " + err));
 }
 
 async function goToNextChainedQuestion(user) {
   user.waitingResponseCount++;
-  return await user.save();
+  await user.save();
+  return user.waitingResponseCount
 }
 
 async function goToNextQuestion(user) {
@@ -110,20 +117,20 @@ async function handleMessageQuiz(psid, webhookMessage) {
     if (waitForResponse)
       return;
 
+    // increment count only if there is no response to the quiz question // never ? 
     anwsered_count = await incrementCount(user);
   }
 
   // the quiz is finished ?
   if (IsLastQuestion(anwsered_count)) {
     const profil = getProfil(user);
-    callSendAPIMessage(psid, createWebviewResult(profil));
+    return sendTextAnswer(psid, createWebviewResult(profil));
   }
 
   // create response with quick replies
   const content = dataJSON[anwsered_count];
   const response = createQuickReplies(content);
-  callSendAPIMessage(psid, response);
-
+  return sendTextAnswer(psid, response);
 }
 
 // saving profils sended by psid though payloads
@@ -184,13 +191,9 @@ async function sendMarkSeen(sender_psid) {
   callSendAPIAction(sender_psid, "mark_seen");
 }
 
-
-
-
-
 async function sendTextAnswer(sender_psid, response) {
   sendTypingOn(sender_psid);
-  await sleep(2000);
+  await sleep(3000);
   sendTypingOff(sender_psid);
 
   callSendAPIMessage(sender_psid, response);
@@ -214,10 +217,10 @@ function createWebviewResult(profil) {
             "subtitle": resultsJSON[profil].title,
             "default_action": {
               "type": "web_url",
-              "url": "https://bubble-message.glitch.me/dynamic-webview?result=" + profil,
+              "url":  process.env.PAGE_URL + "/dynamic-webview?result=" + profil,
               "messenger_extensions": true,
               "webview_height_ratio": "tall",
-              "fallback_url": "https://bubble-message.glitch.me/dynamic-webview?result=" + profil
+              "fallback_url": process.env.PAGE_URL + "/dynamic-webview?result=" + profil
             }
           }
         ]
@@ -268,11 +271,6 @@ function handlePostback(sender_psid, webhook_event) {
     pauseConversation(sender_psid);
   else
     responseAndContinueQuiz(sender_psid, payload);
-  /* else if ( payload == "yes_protest" ) 
-     sendTextAnswer(sender_psid, { "text": chatJSON.yes_protest });
-     else if (payload == "no_protest")
-     sendTextAnswer(sender_psid, { "text": chatJSON.no_protest });*/
-
 }
 
 async function responseAndContinueQuiz(sender_psid, payload) {
@@ -300,7 +298,8 @@ async function startQuiz(sender_psid, message = null) {
 
 function restartQuiz(sender_psid) {
   mongoOxfam
-    .findOneAndUpdate({ "PSID": sender_psid }, { $set: { "answered.count": 0, "result": [], "waitForUserResponse": false } })
+    .findOneAndUpdate({ "PSID": sender_psid }, { $set: { "answered.count": 0, "result": []} })
+    .then((result) => resetQuestionOptions(result))
     .then(() => startQuiz(sender_psid))
     .catch(err => console.log("error during the restart of the quizz "));
 }
@@ -407,37 +406,35 @@ app.post('/webhook', async (req, res) => {
       // Gets the body of the webhook event
       const webhook_event = entry.messaging[0];
       const sender_psid = webhook_event.sender.id;
-      const user = await mongoOxfam.findOne({ "PSID": sender_psid });
-      webhookDebug(webhook_event);
 
+      // # debug 
+      webhookDebug(webhook_event);
       // Get the sender PSID
       webhookDebug('Sender PSID: ' + sender_psid);
-      sendMarkSeen(sender_psid);
       console.dir('webhook event' + webhook_event);
-
+// # debug
       // Check if the event is a message or postback and
       // pass the event to the appropriate handler function
       if (webhook_event.message) {
 
+        // :: response to the quizz 
         if (webhook_event.message.quick_reply) {
-          sendTypingOn(sender_psid);
 
           handleMessageQuiz(sender_psid, webhook_event.message)
             .catch(err => console.log("error during the handle of the message quiz " + err));
         }
+        // :: other response
         else if (webhook_event.message.text) {
+          
+          const user = await mongoOxfam.findOne({ "PSID": sender_psid });
           console.log("message : " + webhook_event.message.text);
-          if (/continuer/.test(webhook_event.message.text.toLowerCase()))
+
+          if (user && user.waitForUserResponse)
+            sendMultipleResponse(user);
+          else if (/continuer/.test(webhook_event.message.text.toLowerCase()))
             startQuiz(sender_psid, webhook_event.message);
           else if (/recommencer/.test(webhook_event.message.text.toLowerCase()))
             restartQuiz(sender_psid);
-          else if ("results" == webhook_event.message.text) {
-            const profil = getProfil(user);
-            callSendAPIMessage(sender_psid, createWebviewResult(profil));
-          }
-
-          else if (user.waitForUserResponse)
-            sendMultipleResponse(user);
           else
             waitReadyState(sender_psid);
         }
