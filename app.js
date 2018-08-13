@@ -14,6 +14,8 @@ const dataJSON = require('./public/quiz.json');
 const chatJSON = require('./public/chat.json');
 const resultsJSON = require('./public/results.json');
 const responseJSON = require("./public/response.json");
+require('dotenv').config();
+
 // :: Dependencies in the personal code
 
 
