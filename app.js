@@ -179,6 +179,9 @@ function getProfil(user) {
   return maxEl;
 }
 
+      
+
+
 async function sendTypingOn(sender_psid) {
   callSendAPIAction(sender_psid, "typing_on");
 }
@@ -304,6 +307,34 @@ function restartQuiz(sender_psid) {
     .catch(err => console.log("error during the restart of the quizz "));
 }
 
+function setupGetStartedButton(res){
+  var messageData = {
+          "get_started":[
+          {
+              "payload":"start_conversation"
+              }
+          ]
+  };
+
+  // Start the request
+  request({
+      url: 'https://graph.facebook.com/v2.6/me/messenger_profile?access_token='+ process.env.PAGE_ACCESS_TOKEN,
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      form: messageData
+  },
+  function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+          // Print out the response body
+          res.send(body);
+
+      } else { 
+          // TODO: Handle errors
+          res.send(body);
+      }
+  });
+}   
+
 function callSendAPIAction(sender_psid, action) {
   let response = {
     "recipient": {
@@ -378,6 +409,11 @@ app.get('/dynamic-webview', (req, res) => {
   console.dir(resultsJSON[result]);
   res.render('template', resultsJSON[result]);
 });
+
+// app.get('/setup',function(req,res){
+
+//   setupGetStartedButton(res);
+// });
 
 app.get('/webhook', (req, res) => {
   let VERIFY_TOKEN = process.env.PAGE_ACCESS_TOKEN;
