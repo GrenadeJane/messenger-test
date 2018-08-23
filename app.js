@@ -309,11 +309,10 @@ function restartQuiz(sender_psid) {
 
 function setupGetStartedButton(res){
   var messageData = {
-          "get_started":[
+          "get_started":
           {
               "payload":"start_conversation"
-              }
-          ]
+          }
   };
 
   // Start the request
