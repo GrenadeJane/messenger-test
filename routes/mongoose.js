@@ -1,8 +1,10 @@
 var mongoose = require('mongoose');
 
 let uri;
-// uri = 'mongodb://lea:oxfam-lea-1@ds143971.mlab.com:43971/oxfam-test';
-uri=process.env.MONGO_URL;
+uri = 'mongodb://lea:oxfam-lea-1@ds143971.mlab.com:43971/oxfam-test';
+// mongodb://696595:l5WSz@p6Qf3Y.sftp.sd5.gpaas.net/oxfam';
+// username: 696595
+// password: l5WSz@p6Qf3Y
 mongoose.connect(uri,  { useNewUrlParser: true } )
 	.then(() => console.log('Connected to MongoDB ... '))
 	.catch(err => console.log('Could not connect to MongoDB ...', err));
@@ -36,4 +38,17 @@ const Thread_Data = mongoose.model('thread_datas', new mongoose.Schema({
 	.index({ PSID: 1}, { unique: true }));
 
 
-module.exports = Thread_Data; 
+async function incrementCount(user) {
+  user.answered.count++;
+  await user.save();
+  return user.answered.count;
+}
+
+async function incrementCountPSID ( psid ) {
+  const user = await mongoOxfam.findOne ({"PSID" : psid });
+  await incrementCount(user);
+}
+
+module.exports.DataModel = Thread_Data; 
+module.exports.incrementCount = incrementCount; 
+module.exports.incrementCountPSID = incrementCountPSID; 
