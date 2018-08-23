@@ -410,10 +410,10 @@ app.get('/dynamic-webview', (req, res) => {
   res.render('template', resultsJSON[result]);
 });
 
-app.get('/setup',function(req,res){
+// app.get('/setup',function(req,res){
 
-  setupGetStartedButton(res);
-});
+//   setupGetStartedButton(res);
+// });
 
 app.get('/webhook', (req, res) => {
   let VERIFY_TOKEN = process.env.PAGE_ACCESS_TOKEN;
