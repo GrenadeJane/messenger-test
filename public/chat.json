@@ -53,5 +53,6 @@
 	"stop": "Tu ne veux pas finir le quiz ? ",
 	"continue": "Si tu veux reprendre le quiz, dis-le moi avec 'continuer', ou en cliquant sur le bouton :)",
   "yes_protest" : "Super ! 😄",
-  "idk_protest" : "Bon, c’est vrai que le 2 décembre c’est encore loin 😉"
+  "idk_protest" : "Bon, c’est vrai que le 2 décembre c’est encore loin 😉",
+  "bot_wait" : "Tu ne réponds pas ? Continuons alors... "
 }

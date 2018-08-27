@@ -45,7 +45,7 @@ async function incrementCount(user) {
 }
 
 async function incrementCountPSID ( psid ) {
-  const user = await mongoOxfam.findOne ({"PSID" : psid });
+  const user = await Thread_Data.findOne ({"PSID" : psid });
   await incrementCount(user);
 }
 

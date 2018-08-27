@@ -16,6 +16,7 @@ const resultsJSON = require('./public/results.json');
 const responseJSON = require("./public/response.json");
 require('dotenv').config();
 
+var timer;
 // :: Dependencies in the personal code
 
 
@@ -33,13 +34,14 @@ function sleep(ms) {
 
 async function sendMultipleResponse(user) {
   // :: send the next response of the chain
-  sendTextAnswer(user.PSID, responseJSON[user.answered.count].master_response[user.waitingResponseCount])
+    sendTextAnswer(user.PSID, responseJSON[user.answered.count].master_response[user.waitingResponseCount])
     .then(() => goToNextChainedQuestion(user))
     .then((newCount) => {
      // :: if this is the last response of the chain, continue to the chain, send the next quiz's question
       if (newCount >= responseJSON[user.answered.count].master_response.length) {
         continueQuizAfterUserResponse(user);
       }
+      return user;
     })
     .catch((err) => { console.log('error during the load of the next chained question ' + err); resetQuestionOptions(); });
 }
@@ -55,7 +57,7 @@ async function continueQuizAfterUserResponse(user)
 async function goToNextChainedQuestion(user) {
   user.waitingResponseCount++;
   await user.save();
-  return user.waitingResponseCount
+  return user.waitingResponseCount;
 }
 
 async function goToNextQuestion(user) {
@@ -69,6 +71,17 @@ async function resetQuestionOptions(user) {
   return await user.save();
 }
 
+async function delayWaitingUserAnswer(sender_psid)
+{
+  await sleep(10000);
+  let user = await mongoOxfam.DataModel.findOne({ "PSID": sender_psid });//{ $set: { "waitForUserResponse": state } });
+  if ( user.waitForUserResponse ) 
+  {
+    await sendTextAnswer(sender_psid, { "text": chatJSON.bot_wait });
+    continueQuizAfterUserResponse(user);
+  }
+}
+
 async function answerToPayload(user, questionIndex, payloadIndex) {
   const responsePayload = responseJSON[questionIndex];
   let waitResponse = false;
@@ -76,24 +89,33 @@ async function answerToPayload(user, questionIndex, payloadIndex) {
   // one response for all the payload
   if (responsePayload.master_response) {
     // if there is more than one sentence, wait that the user answer between them
-    if (responsePayload.master_response.length > 0)
-      waitResponse = true;
+  
     // bot send text answer 
     await sendMultipleResponse(user);
-    //sendTextAnswer(user, responsePayload.master_response[0]);
+    
+    if (responsePayload.master_response.length > 1 )
+    {
+      await changeWaitStatusUser(user.PSID, true);
+      waitResponse = true;
+     //delayWaitingUserAnswer(user.PSID);
+    }
   } else {
     if (responsePayload[payloadIndex].response.attachment)
+    {
+      await changeWaitStatusUser(user.PSID, true);
       waitResponse = true;
-
+    }
+    
     await sendTextAnswer(user.PSID, responsePayload[payloadIndex].response);
   }
 
   await changeWaitStatusUser(user.PSID, waitResponse);
+  
   return waitResponse;
 }
 
 async function changeWaitStatusUser(psid, state) {
-  return await mongoOxfam.findOneAndUpdate({ "PSID": psid }, { $set: { "waitForUserResponse": state } });
+  return await mongoOxfam.DataModel.findOneAndUpdate({ "PSID": psid }, { $set: { "waitForUserResponse": state } });
 }
 
 function IsLastQuestion(count) {
@@ -102,7 +124,7 @@ function IsLastQuestion(count) {
 
 async function handleMessageQuiz(psid, webhookMessage) {
   // get user in the database from the psid
-  let user = await mongoOxfam.findOne({ "PSID": psid });
+  let user = await mongoOxfam.DataModel.findOne({ "PSID": psid });
   let anwsered_count = user ? user.answered.count : 0;
 
   // if psid start conversation
@@ -136,13 +158,13 @@ async function handleMessageQuiz(psid, webhookMessage) {
 // saving profils sended by psid though payloads
 async function saveResult(user, webhookMessage) {
   let profils = responseJSON[user.answered.count][webhookMessage.quick_reply.payload].profils;
-  return await mongoOxfam.findByIdAndUpdate(user._id, { $push: { "result": profils } });
+  return await mongoOxfam.DataModel.findByIdAndUpdate(user._id, { $push: { "result": profils } });
 }
 
 
 async function createUser(psid) {
   console.log("create new user with the psid : " + psid);
-  let user = new mongoOxfam();
+  let user = new mongoOxfam.DataModel();
   user.PSID = psid;
 
   return await user.save();
@@ -155,7 +177,7 @@ async function incrementCount(user) {
 }
 
 async function incrementCountPSID(psid) {
-  const user = await mongoOxfam.findOne({ "PSID": psid });
+  const user = await mongoOxfam.DataModel.findOne({ "PSID": psid });
   await incrementCount(user);
 }
 
@@ -215,9 +237,9 @@ function createWebviewResult(profil) {
         "template_type": "generic",
         "elements": [
           {
-            "title": "Découvre ton résultat !",
+            "title": "Tu es " + resultsJSON[profil].title,
             "image_url": resultsJSON[profil].image,
-            "subtitle": resultsJSON[profil].title,
+            "subtitle": "Clique ici pour découvrir ton profil",
             "default_action": {
               "type": "web_url",
               "url":  process.env.PAGE_URL + "/dynamic-webview?result=" + profil,
@@ -264,16 +286,24 @@ function handlePostback(sender_psid, webhook_event) {
   let payload = webhook_event.postback.payload;
 
   // start quiz with the start button
-  if (payload == "start_quiz" ||  payload == "resume")
+  if (payload == "start_quiz" )
+    explanationAndStartQuiz(sender_psid, webhook_event.message);
+  else if (payload == "resume")
     startQuiz(sender_psid, webhook_event.message);
   else if (payload == "reset_quiz")
-    restartQuiz(sender_psid);
+    cleanQuizAndStart(sender_psid);
   else if (payload == "start_conversation")
     startConversation(sender_psid);
   else if (payload == "wait")
     pauseConversation(sender_psid);
   else
     responseAndContinueQuiz(sender_psid, payload);
+}
+
+
+async function explanationAndStartQuiz(sender_psid, message = null) {
+  await sendTextAnswer(sender_psid, { "attachment": chatJSON.reset });
+  startQuiz(sender_psid, message);
 }
 
 async function responseAndContinueQuiz(sender_psid, payload) {
@@ -288,8 +318,8 @@ async function pauseConversation(sender_psid) {
 }
 
 async function startConversation(sender_psid) {
+  await cleanQuiz(sender_psid);
   await sendTextAnswer(sender_psid, { "text": chatJSON.greetings });
-  await sendTextAnswer(sender_psid, { "attachment": chatJSON.reset });
   await sendTextAnswer(sender_psid, { "attachment": chatJSON.start });
 }
 
@@ -299,10 +329,16 @@ async function startQuiz(sender_psid, message = null) {
   handleMessageQuiz(sender_psid, message);
 }
 
-function restartQuiz(sender_psid) {
-  mongoOxfam
+async function cleanQuiz(sender_psid) {
+  return await mongoOxfam.DataModel
     .findOneAndUpdate({ "PSID": sender_psid }, { $set: { "answered.count": 0, "result": []} })
     .then((result) => resetQuestionOptions(result))
+    .catch(err => console.log("error during the restart of the quizz "));
+}
+
+
+function cleanQuizAndStart(sender_psid) {
+  cleanQuiz(sender_psid)
     .then(() => startQuiz(sender_psid))
     .catch(err => console.log("error during the restart of the quizz "));
 }
@@ -432,9 +468,14 @@ app.get('/webhook', (req, res) => {
 
 
 app.post('/webhook', async (req, res) => {
+  console.time("webhookresponse");
+  console.time("webhookparse");
   const body = req.body;
   if (body.object === 'page') {
 
+    res.status(200).send('EVENT_RECEIVED');
+    console.timeEnd("webhookresponse");
+    
     await body.entry.forEach(async (entry) => {
 
 
@@ -461,15 +502,18 @@ app.post('/webhook', async (req, res) => {
         // :: other response
         else if (webhook_event.message.text) {
           
-          const user = await mongoOxfam.findOne({ "PSID": sender_psid });
+          const user = await mongoOxfam.DataModel.findOne({ "PSID": sender_psid });
           console.log("message : " + webhook_event.message.text);
 
-          if (user && user.waitForUserResponse)
-            sendMultipleResponse(user);
-          else if (/continuer/.test(webhook_event.message.text.toLowerCase()))
+          if (/continuer/.test(webhook_event.message.text.toLowerCase()))
             startQuiz(sender_psid, webhook_event.message);
           else if (/recommencer/.test(webhook_event.message.text.toLowerCase()))
-            restartQuiz(sender_psid);
+            cleanQuizAndStart(sender_psid);
+          else if (user && user.waitForUserResponse)
+          {
+            changeWaitStatusUser(user.PSID, false)
+            .then(() =>  { sendMultipleResponse(user);});
+          }
           else
             waitReadyState(sender_psid);
         }
@@ -479,8 +523,9 @@ app.post('/webhook', async (req, res) => {
         handlePostback(sender_psid, webhook_event);
       }
     });
+  console.timeEnd("webhookparse");
 
-    res.status(200).send('EVENT_RECEIVED');
+   // res.status(200).send('EVENT_RECEIVED');
 
   } else {
     res.sendStatus(404);
