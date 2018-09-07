@@ -68,6 +68,7 @@ async function goToNextQuestion(user) {
 async function resetQuestionOptions(user) {
   user.waitingResponseCount = 0;
   user.waitForUserResponse = false;
+  user.waitingResponseCount = false;
   return await user.save();
 }
 
@@ -331,7 +332,7 @@ async function startQuiz(sender_psid, message = null) {
 
 async function cleanQuiz(sender_psid) {
   return await mongoOxfam.DataModel
-    .findOneAndUpdate({ "PSID": sender_psid }, { $set: { "answered.count": 0, "result": []} })
+    .findOneAndUpdate({ "PSID": sender_psid }, { $set: { "answered.count": 2, "result": []} })
     .then((result) => resetQuestionOptions(result))
     .catch(err => console.log("error during the restart of the quizz "));
 }
