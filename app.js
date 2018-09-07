@@ -17,6 +17,10 @@ const responseJSON = require("./public/response.json");
 require('dotenv').config();
 
 var timer;
+
+process.env.PAGE_ACCESS_TOKEN = "EAAebZCVjRo64BANZBJJkUPZCPOHgntDb2ZCaHdkCydCGTFQ1MvtnAZBZAIrFjlCF3ZCuSOQXN4bUr2XkaiZA7B4ho3BSIJBnOYvmtHyjOm1fZBJxhhMG1UmNHZA4SAwJhg9OdU6fKXCEg8eiMnlmnRjWNJiE31VuI7raUFFjCcOWbljwZDZD";
+process.env.PAGE_URL="https://oxfam-bot.baku-digital.be"
+
 // :: Dependencies in the personal code
 
 
