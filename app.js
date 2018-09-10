@@ -18,8 +18,8 @@ require('dotenv').config();
 
 var timer;
 
-process.env.PAGE_ACCESS_TOKEN = "EAAebZCVjRo64BANZBJJkUPZCPOHgntDb2ZCaHdkCydCGTFQ1MvtnAZBZAIrFjlCF3ZCuSOQXN4bUr2XkaiZA7B4ho3BSIJBnOYvmtHyjOm1fZBJxhhMG1UmNHZA4SAwJhg9OdU6fKXCEg8eiMnlmnRjWNJiE31VuI7raUFFjCcOWbljwZDZD";
-process.env.PAGE_URL="https://oxfam-bot.baku-digital.be"
+//process.env.PAGE_ACCESS_TOKEN = "EAAebZCVjRo64BAJftePVh5e9lcqcSls8PyZCAr4ZCrIH9ZA0EfWCSKEng9L5trSBpJeek4JHeS8tWZB9rWgOzn9cAMwUPfUw2zku9agg48dituOZBvKAFUqOTW5mjO471CHMVuBB7LcFt8GAA9o3J8dO7wa15oVkFhpfvrdyP0EQZDZD";
+//process.env.PAGE_URL="https://oxfam-bot.baku-digital.be"
 
 // :: Dependencies in the personal code
 
@@ -98,7 +98,7 @@ async function answerToPayload(user, questionIndex, payloadIndex) {
     // bot send text answer 
     await sendMultipleResponse(user);
     
-    if (responsePayload.master_response.length > 1 )
+    //if (responsePayload.master_response.length > 1 )
     {
       await changeWaitStatusUser(user.PSID, true);
       waitResponse = true;
@@ -308,6 +308,7 @@ function handlePostback(sender_psid, webhook_event) {
 
 async function explanationAndStartQuiz(sender_psid, message = null) {
   await sendTextAnswer(sender_psid, { "attachment": chatJSON.reset });
+  await sendTextAnswer(sender_psid, { "text" : chatJSON.zoom });
   startQuiz(sender_psid, message);
 }
 
@@ -336,7 +337,7 @@ async function startQuiz(sender_psid, message = null) {
 
 async function cleanQuiz(sender_psid) {
   return await mongoOxfam.DataModel
-    .findOneAndUpdate({ "PSID": sender_psid }, { $set: { "answered.count": 2, "result": []} })
+    .findOneAndUpdate({ "PSID": sender_psid }, { $set: { "answered.count": 0, "result": []} })
     .then((result) => resetQuestionOptions(result))
     .catch(err => console.log("error during the restart of the quizz "));
 }
@@ -477,7 +478,7 @@ app.post('/webhook', async (req, res) => {
   console.time("webhookparse");
   const body = req.body;
   if (body.object === 'page') {
-
+ 
     res.status(200).send('EVENT_RECEIVED');
     console.timeEnd("webhookresponse");
     
