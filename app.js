@@ -18,7 +18,7 @@ require('dotenv').config();
 
 var timer;
 
-process.env.PAGE_ACCESS_TOKEN = "EAAebZCVjRo64BANZBJJkUPZCPOHgntDb2ZCaHdkCydCGTFQ1MvtnAZBZAIrFjlCF3ZCuSOQXN4bUr2XkaiZA7B4ho3BSIJBnOYvmtHyjOm1fZBJxhhMG1UmNHZA4SAwJhg9OdU6fKXCEg8eiMnlmnRjWNJiE31VuI7raUFFjCcOWbljwZDZD";
+process.env.PAGE_ACCESS_TOKEN = "EAAebZCVjRo64BAIJgGG1c0Xb3ZC1hlW9xCCrVvNxPBwZBI3ZCGhb6RMtbmLVtfaFaFcpbSvKZBZAjniBYXWIqnKNVwWvMC5lvKqEqwiA6eUjhtRrFXi7JsO4FUaXOerfW0iBBER0QZAHCkipmG3Sw2sBA9kyWEYy2HUnpSUVy4VowZDZD";
 process.env.PAGE_URL="https://oxfam-bot.baku-digital.be"
 
 // :: Dependencies in the personal code
