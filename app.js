@@ -263,6 +263,7 @@ function createWebviewResult(profil) {
     }
   }
 }
+}
 
 function createQuickReplies(question) {
   let quick_replies = [];
