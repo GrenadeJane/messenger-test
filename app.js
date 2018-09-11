@@ -543,10 +543,12 @@ app.post('/webhook', async (req, res) => {
             startQuiz(sender_psid, webhook_event.message);
           else if (/recommencer/.test(webhook_event.message.text.toLowerCase()))
             cleanQuizAndStart(sender_psid);
-          else if (user && user.waitForUserResponse)
-          {
+          else if (user && user.waitForUserResponse) {
             changeWaitStatusUser(user.PSID, false)
             .then(() =>  { sendMultipleResponse(user);});
+          }
+          else if ( IsLastQuestion(user.answered.count)){
+            return;
           }
           else
             waitReadyState(sender_psid);
@@ -558,9 +560,6 @@ app.post('/webhook', async (req, res) => {
       }
     });
   console.timeEnd("webhookparse");
-
-   // res.status(200).send('EVENT_RECEIVED');
-
   } else {
     res.sendStatus(404);
   }
