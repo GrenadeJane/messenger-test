@@ -233,36 +233,58 @@ async function waitReadyState(sender_psid) {
 
 function createWebviewResult(profil) {
   return {
-    "type": "element_share",
-    "share_contents": { 
     "attachment": {
-      "type": "template",
-      "payload": {
-        "template_type": "generic",
-        "elements": [
-          {
-            "title": "Tu es " + resultsJSON[profil].title,
-            "image_url": resultsJSON[profil].image,
-            "subtitle": "Clique ici pour découvrir ton profil",
-            "default_action": {
-              "type": "web_url",
-              "url":  process.env.PAGE_URL + "/dynamic-webview?result=" + profil,
-              "messenger_extensions": true,
-              "webview_height_ratio": "tall",
-              "fallback_url": process.env.PAGE_URL + "/dynamic-webview?result=" + profil
-            }}],
-            "buttons": [
-              {
-                "type": "web_url",
-                "url": process.env.PAGE_URL + "/dynamic-webview?result=" + profil,
-                "title": "Partager"
-              }
-            ]
-        
-      }
-    }
-  }
-}
+     "type": "template",
+     "payload": {
+       "template_type": "generic",
+       "elements": [
+         {
+           "title": "Tu es " + resultsJSON[profil].title,
+           "image_url": resultsJSON[profil].image,
+           "subtitle": "Clique ici pour découvrir ton profil",
+           "default_action": {
+             "type": "web_url",
+             "url":  process.env.PAGE_URL + "/dynamic-webview?result=" + profil,
+             "messenger_extensions": true,
+             "webview_height_ratio": "tall",
+             "fallback_url": process.env.PAGE_URL + "/dynamic-webview?result=" + profil
+           },
+           "buttons": [
+             {
+               "type": "element_share",
+               "share_contents": { 
+                 "attachment": {
+                   "type": "template",
+                   "payload": {
+                     "template_type": "generic",
+                     "elements": [
+                       {
+                         "title": "Tu es " + resultsJSON[profil].title,
+                         "subtitle": "Tu es " + resultsJSON[profil].title,
+                         "image_url": resultsJSON[profil].image,
+                         "default_action": {
+                           "type": "web_url",
+                           "url": process.env.PAGE_URL + "/dynamic-webview?result=" + profil,
+                         },
+                         "buttons": [
+                           {
+                             "type": "web_url",
+                             "url": process.env.PAGE_URL + "/dynamic-webview?result=" + profil,
+                             "title": "Partager"
+                           }
+                         ]
+                       }
+                     ]
+                   }
+                 }
+               }
+             }
+           ]
+         }
+       ]
+     }
+   }
+ }
 }
 
 function createQuickReplies(question) {
