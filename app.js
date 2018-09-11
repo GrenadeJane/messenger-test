@@ -18,9 +18,6 @@ require('dotenv').config();
 
 var timer;
 
-process.env.PAGE_ACCESS_TOKEN = "EAAebZCVjRo64BAIJgGG1c0Xb3ZC1hlW9xCCrVvNxPBwZBI3ZCGhb6RMtbmLVtfaFaFcpbSvKZBZAjniBYXWIqnKNVwWvMC5lvKqEqwiA6eUjhtRrFXi7JsO4FUaXOerfW0iBBER0QZAHCkipmG3Sw2sBA9kyWEYy2HUnpSUVy4VowZDZD";
-process.env.PAGE_URL="https://oxfam-bot.baku-digital.be"
-
 // :: Dependencies in the personal code
 
 
@@ -236,6 +233,8 @@ async function waitReadyState(sender_psid) {
 
 function createWebviewResult(profil) {
   return {
+    "type": "element_share",
+    "share_contents": { 
     "attachment": {
       "type": "template",
       "payload": {
@@ -251,9 +250,15 @@ function createWebviewResult(profil) {
               "messenger_extensions": true,
               "webview_height_ratio": "tall",
               "fallback_url": process.env.PAGE_URL + "/dynamic-webview?result=" + profil
-            }
-          }
-        ]
+            }}],
+            "buttons": [
+              {
+                "type": "web_url",
+                "url": process.env.PAGE_URL + "/dynamic-webview?result=" + profil,
+                "title": "Partager"
+              }
+            ]
+        
       }
     }
   }
