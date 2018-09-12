@@ -1,11 +1,6 @@
 var mongoose = require('mongoose');
 
-let uri;
-uri = 'mongodb://lea:oxfam-lea-1@ds143971.mlab.com:43971/oxfam-test';
-// mongodb://696595:l5WSz@p6Qf3Y.sftp.sd5.gpaas.net/oxfam';
-// username: 696595
-// password: l5WSz@p6Qf3Y
-mongoose.connect(uri,  { useNewUrlParser: true } )
+mongoose.connect(process.env.MONGO_URL,  { useNewUrlParser: true } )
 	.then(() => console.log('Connected to MongoDB ... '))
 	.catch(err => console.log('Could not connect to MongoDB ...', err));
 
