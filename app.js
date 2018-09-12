@@ -264,12 +264,12 @@ function createWebviewResult(profil) {
                          "image_url": resultsJSON[profil].image,
                          "default_action": {
                            "type": "web_url",
-                           "url": process.env.PAGE_URL + "/dynamic-webview?result=" + profil,
+                           "url":resultsJSON[profil].url,
                          },
                          "buttons": [
                            {
                              "type": "web_url",
-                             "url": process.env.PAGE_URL + "/dynamic-webview?result=" + profil,
+                             "url": resultsJSON[profil].url,
                              "title": "Partager"
                            }
                          ]
