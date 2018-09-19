@@ -244,10 +244,10 @@ function createWebviewResult(profil) {
            "subtitle": "Clique ici pour découvrir ton profil",
            "default_action": {
              "type": "web_url",
-             "url":  process.env.PAGE_URL + "/dynamic-webview?result=" + profil,
+             "url":  resultsJSON[profil].url,
              "messenger_extensions": true,
              "webview_height_ratio": "tall",
-             "fallback_url": process.env.PAGE_URL + "/dynamic-webview?result=" + profil
+             "fallback_url": resultsJSON[profil].url
            },
            "buttons": [
              {
